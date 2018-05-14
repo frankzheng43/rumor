@@ -1,31 +1,69 @@
-// TODO 如果可以补间的话可以试试
-*1.2高管更替数据（无用）
-import delimited "raw\TMT_Position.txt", varnames(1) encoding(UTF-8) clear
+/**
+ * This code is used to import and clean company executive turnover data 
+ * Author: Frank Zheng
+ * Required data: TMT_Position.txt 
+ * Required code: - 
+ * Required ssc : - 
+ */
 
+ // install missing ssc
+ local sscname estout winsor2 
+ foreach pkg of local sscname{
+  cap which  `pkg'
+  if _rc!=0{
+        ssc install `pkg'
+        }
+ }
+
+// setups
+clear all
+set more off
+eststo clear
+capture version 14
+local location "F:\rumor"
+cd "`location'"
+capt log close _all
+log using logs\turnover, name("turnover") text replace
+
+// TODO 如果可以补间的话可以试试(formerge)
+// 高管更替数据1
+
+import delimited raw\TMT_Position.txt, varnames(1) encoding(UTF-8) stringcols(1) clear
+
+/** This program is used to convert string date to numeric date*/
+capture program drop str_to_numeric
+program str_to_numeric
+gen `1'1 = date( `1' ,"YMD")
+format `1'1 %td
+order `1'1, after(`1')
+drop `1' 
+rename `1'1 `1' 
+end
 local datevar reptdt startdate //改为日期格式
 foreach x of local datevar{
-	gen `x'1 = date(`x',"YMD")
-	format `x'1 %td
-	drop `x'
-	rename `x'1 `x'
-	order `x',after(stkcd)
+	str_to_numeric `x'
 }
+gen startyear = year(startdate)
+
+// gen endyear 
 gen year_string = substr(enddate,1,4)
 destring year_string, gen(endyear) force
-drop year_string
+order endyear, after(enddate)
+replace endyear = . if endyear == 0
+drop year_string enddate
+
 save "statadata\02_firm_board.dta", replace
 
-*1.3高管更替数据
+// 高管更替数据2
 import delimited raw\CG_Ceo.csv, varnames(1) encoding(UTF-16) stringcols(1) clear
+
 drop v19 v20 v21
+
 local datevar annodt chgdt
 foreach x of local datevar{
-	gen `x'1 = date(`x',"YMD")
-	format `x'1 %td
-	drop `x'
-	rename `x'1 `x'
-	order `x',after(stkcd)
+	str_to_numeric `x'
 }
+
 destring years, replace force
 gen month = month(annodt)
 gen year = year(annodt)
