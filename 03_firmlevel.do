@@ -1,19 +1,4 @@
 
-*1.4公司地址变更数据
-import delimited "raw\STK_ListedCoInfoChg.txt", varnames(1) encoding(UTF-16) stringcols(1) clear
-drop securityid listedcoid v9 v10
-rename symbol stkcd
-
-local datevar announcementdate implementdate
-foreach x of local datevar{
-	gen `x'1 = date(`x',"YMD")
-	format `x'1 %td
-	drop `x'
-	rename `x'1 `x'
-	order `x',after(stkcd)
-}
-// keep if changeditem == "办公地址"
-save "statadata\02_firm_loc.dta", replace
 
 *1.5研发投入的数据
 import delimited  "F:\rumor\raw\PT_LCRDSpending.txt" , varnames(1) encoding(UTF-8) clear

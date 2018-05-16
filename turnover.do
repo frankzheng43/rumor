@@ -52,7 +52,24 @@ order endyear, after(enddate)
 replace endyear = . if endyear == 0
 drop year_string enddate
 
-save "statadata\02_firm_board.dta", replace
+label var stkcd "证券代码"
+label var reptdt "统计截止日期"
+label var personid "人员ID" 
+label var name "姓名"
+label var position "职务"
+label var startdate "任职开始日期"
+label var startyear "任职开始年份"
+label var endyear "任职结束年份"
+label var servicestatus "是否在职"
+label var tenure "任期"
+label var toleavpost "距离离任剩余时期"
+
+quietly ds
+foreach x of var `r(varlist)'{
+	rename `x' `x'_1
+}
+
+save statadata\02_firm_board.dta, replace
 
 // 高管更替数据2
 import delimited raw\CG_Ceo.csv, varnames(1) encoding(UTF-16) stringcols(1) clear
@@ -67,4 +84,9 @@ foreach x of local datevar{
 destring years, replace force
 gen month = month(annodt)
 gen year = year(annodt)
-save "statadata\02_firm_turnover.dta", replace
+save statadata\02_firm_turnover.dta, replace
+
+// 高管更替数据3
+
+
+log close turnover
