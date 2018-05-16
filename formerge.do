@@ -31,6 +31,20 @@ use statadata\02_firm.dta, clear
 tempfile Fin_Index
 save `Fin_Index'
 
+// firm-year
+use `Fin_Index'
+keep stkcd indcd year
+sort stkcd indcd year
+save statadata\formerge_y.dta, replace
+
+// firm-quarter
+use `Fin_Index'
+keep stkcd indcd year
+expand 4
+sort stkcd year
+egen quarter = fill(1[1]4 1[1]4)
+save statadata\formerge_q.dta, replace
+
 // firm-month
 use `Fin_Index'
 keep stkcd indcd year
@@ -39,17 +53,21 @@ expand 12
 sort stkcd year
 egen month = fill(1[1]12 1[1]12)
 egen quarter = fill(1 1 1 2 2 2 3 3 3 4 4 4 1 1 1 2 2 2 3 3 3 4 4 4)
-save "statadata\formerge_m.dta", replace
+save statadata\formerge_m.dta, replace
 
-//  firm-quarter
+// industry-year 的数据直接用firm-year的就可以。
+// industry-quarter
 use `Fin_Index'
 keep stkcd indcd year
+egen idindy = group(year indcd)
+bysort idindy: gen seq = _n
+keep if seq == 1
+drop seq idindy
 expand 4
-sort stkcd year
+sort indcd year
 egen quarter = fill(1[1]4 1[1]4)
-save "statadata\formerge_q.dta", replace
-
-//  industry-month
+save statadata\formerge_iq.dta, replace
+// industry-month
 use `Fin_Index'
 keep stkcd indcd year
 // keep only one ovservation in every industry-year level
@@ -61,18 +79,8 @@ expand 12
 sort indcd year
 egen month = fill(1[1]12 1[1]12)
 egen quarter = fill(1 1 1 2 2 2 3 3 3 4 4 4 1 1 1 2 2 2 3 3 3 4 4 4)
-save "statadata\formerge_im.dta", replace
+save statadata\formerge_im.dta, replace
 
-//  industry-quarter
-use `Fin_Index'
-keep stkcd indcd year
-egen idindy = group(year indcd)
-bysort idindy: gen seq = _n
-keep if seq == 1
-drop seq idindy
-expand 4
-sort indcd year
-egen quarter = fill(1[1]4 1[1]4)
-save "statadata\formerge_iq.dta", replace
+
 
 log close formerge
