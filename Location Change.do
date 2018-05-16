@@ -34,7 +34,7 @@ drop if missing(stkcd)
 /** This program is used to convert string date to numeric date*/
 capture program drop str_to_numeric
 program str_to_numeric
-gen `1'1 = date( `1' ,"YMD")
+gen `1'1 = date(`1' ,"YMD")
 format `1'1 %td
 order `1'1, after(`1')
 drop `1' 

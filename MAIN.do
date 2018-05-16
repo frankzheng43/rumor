@@ -21,4 +21,3 @@ capture version 14
 local location "F:\rumor"
 cd "`location'"
 capt log close _all
-
