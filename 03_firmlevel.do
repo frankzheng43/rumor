@@ -1,111 +1,110 @@
+/**
+ * This code is used to regress firm-level regressions
+ * Author: Frank Zheng
+ * Required data: -
+ * Required code: -
+ * Required ssc : -
+ */
 
+ // install missing ssc
+ local sscname estout winsor2 
+ foreach pkg of local sscname{
+  cap which  `pkg'
+  if _rc!=0{
+        ssc install `pkg'
+        }
+ }
 
-*1.5研发投入的数据
-import delimited  "F:\rumor\raw\PT_LCRDSpending.txt" , varnames(1) encoding(UTF-8) clear
-drop in 1/2
-gen enddate1 = date( enddate ,"YMD")
-format enddate1 %td
-drop enddate 
-rename enddate1 enddate 
-keep if month( enddate ) == 12
-rename symbol stkcd
-order enddate ,after(stkcd)
-drop if statetypecode == "2"
-drop statetypecode
-ds stkcd enddate currency explanation , not
-foreach x of var `r(varlist)'{
-capture confirm string var `x'
-if _rc==0 {
-destring `x', gen(`x'1)
-drop `x'
-rename `x'1 `x'
-}
-}
+// setups
+clear all
+set more off
+eststo clear
+capture version 14
+local location "F:\rumor"
+cd "`location'"
+capt log close _all
+log using logs\firm_reg, name("firm_reg") text replace
 
-*1.6 ///违规数据（明细数据）
-import delimited raw\STK_Violation_Son.txt, varnames(1) encoding(UTF-8) clear
-drop in 1/2
-drop if symbol == "刘凌云" | symbol == "吴翠华" | symbol == "黄学春"
-rename symbol stkcd
-capture program drop str_to_numeric
-program str_to_numeric
-gen `1'1 = date( `1' ,"YMD")
-format `1'1 %td
-order `1'1, after(`1')
-drop `1' 
-rename `1'1 `1' 
-end
-str_to_numeric disposaldate
-drop if missing(stkcd)
-
-ds, has(type string)
-foreach x of var `r(varlist)'{
-	gen `x'1 = strltrim(`x')
-	order `x'1, after(`x')
-	drop `x'
-	rename `x'1 `x'
-}
-*///字符格式转化为数值格式
-destring penalty, gen(penalty1)
-order penalty1, after(penalty)
-drop penalty
-rename penalty1 penalty
-save statadata\02_firm_violation.dta, replace 
-
-*///将明细表转化为总表（同义词处罚的合并成一条）
-use statadata\02_firm_violation.dta, clear
-sort violationid
-egen violationidid = group(violationid)
-bysort violationidid: gen seq = _n
-keep if seq == 1
-drop violationidid seq
-save statadata\02_firm_violation_main.dta, replace
-
-*2回归分析
 *2.1.1ROA回归（公司年）
-use "statadata\02_firm_ROA", clear
-*/和rumor的数据进行合并
-merge 1:1 stkcd year using "statadata\01_rumor_yf.dta"
-replace NO = 0 if missing(NO)
-recode NO ( 1 2 3 4 5 6 7 8 = 1), gen(NO_dum)
-*/构造是否出现丑闻的虚拟变量
-winsor ROA_sd , gen(ROA_sd_wins) p(0.05)
-*/显著，为正
-reg NO ROA_sd_wins if year > 2006 & year < 2016
-logit NO_dum ROA_sd_wins if year > 2006 & year < 2016
+use statadata\formerge_y.dta, clear
+local keyvalue stkcd year 
+merge 1:1 `keyvalue' using statadata\01_rumor_yf.dta, gen(_mrumor)
+merge 1:1 `keyvalue' using statadata\02_firm_ROA.dta, gen(_mroa)
+merge 1:1 `keyvalue' using statadata\05_cv_y.dta, gen(_mcv)
+sort stkcd year 
 
-save "statadata\03_firm_ROA_reg.dta", replace
+drop _m* id accper
+replace vio_count = 0 if missing(vio_count)
+replace NO = 0 if missing(NO)
+recode NO (1 2 3 4 5 6 7 8 = 1), gen(NO_dum)
+order NO_dum, after(NO)
+
+local winsorvar ROA_sd lnasset tobinq rdspendsumratio lev 
+winsor2 `winsorvar', replace cuts(5 95) label
+
+egen id = group(stkcd)
+tsset id year
+
+eststo clear
+local CV lnasset tobinq rdspendsumratio lev
+eststo: reghdfe l1.NO ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+eststo: logit l1.NO_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+esttab using results\firm_y.rtf, replace
+save statadata\03_firm_ROA_reg.dta, replace
 
 *2.1.2ROA回归（公司月）
-use "statadata\02_firm_ROA.dta", clear
-*/扩充样本，补间
-*/https://www.statalist.org/forums/forum/general-stata-discussion/general/115594-expand-observations-and-assign-values-to-the-dupliates
-expand 12
-sort stkcd year
-egen month=fill(1[1]12 1[1]12)
-merge 1:1 stkcd year month using "statadata\01_rumor_mf.dta"
-replace NO = 0 if missing(NO)
-recode NO ( 1 2 3 4 5 6 7 8 = 1), gen(NO_dum)
-winsor ROA_sd , gen(ROA_sd_wins) p(0.05)
-*/显著，为正
-reg NO ROA_sd_wins if year > 2006 & year < 2016
-logit NO_dum ROA_sd_wins if year > 2006 & year < 2016
+use statadata\formerge_m.dta, clear
+local keyvalue stkcd year 
+merge 1:1 `keyvalue' month using statadata\01_rumor_mf.dta, gen(_mrumor)
+merge m:1 `keyvalue' using statadata\02_firm_ROA.dta, gen(_mroa)
+merge 1:1 `keyvalue' month using statadata\05_cv_m.dta, gen(_mcv)
 
-save "statadata\03_firm_ROA_mf_reg.dta", replace
+drop _m* id accper enddate
+replace vio_count = 0 if missing(vio_count)
+replace NO = 0 if missing(NO)
+recode NO (1 2 3 4 5 6 7 8 = 1), gen(NO_dum)
+order NO_dum, after(NO)
+
+local winsorvar ROA_sd lnasset tobinq rdspendsumratio lev
+winsor2 `winsorvar', replace cuts(5 95) label
+
+egen id = group(stkcd)
+egen idmonth = group(year month)
+tsset id idmonth
+
+eststo clear
+local CV lnasset tobinq rdspendsumratio lev
+eststo: reghdfe l1.NO ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+eststo: logit l1.NO_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+esttab using results\firm_mf.rtf, replace
+save statadata\03_firm_ROA_mf_reg.dta, replace
 
 *2.1.3ROA回归（公司季度）
-use "statadata\02_firm_ROA.dta", clear
-expand 4
-sort stkcd year
-egen quarter=fill(1 2 3 4 1 2 3 4)
-merge 1:1 stkcd year quarter using "statadata\01_rumor_qf.dta"
+use statadata\formerge_q.dta, clear
+local keyvalue stkcd year
+merge 1:1 `keyvalue' quarter using statadata\01_rumor_qf.dta, gen(_mrumor)
+merge m:1 `keyvalue' using statadata\02_firm_ROA.dta, gen(_mroa)
+merge 1:1 `keyvalue' quarter using statadata\05_cv_q.dta, gen(_mcv)
+
+drop _m* id accper enddate
+replace vio_count = 0 if missing(vio_count)
 replace NO = 0 if missing(NO)
-recode NO ( 1 2 3 4 5 6 7 8 = 1), gen(NO_dum)
-winsor ROA_sd , gen(ROA_sd_wins) p(0.05)
-*/显著，为正
-reg NO ROA_sd_wins if year > 2006 & year < 2016
-logit NO_dum ROA_sd_wins if year > 2006 & year < 2016
-save "statadata\03_firm_ROA_qf_reg.dta", replace
+recode NO (1 2 3 4 5 6 7 8 = 1), gen(NO_dum)
+order NO_dum, after(NO)
+
+local winsorvar ROA_sd lnasset tobinq rdspendsumratio lev
+winsor2 `winsorvar', replace cuts(5 95) label
+
+egen id = group(stkcd)
+egen idquarter = group(year quarter)
+tsset id idquarter
+
+eststo clear
+local CV lnasset tobinq rdspendsumratio lev
+eststo: reghdfe l1.NO ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+eststo: logit l1.NO_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+esttab using results\firm_qf.rtf, replace
+save statadata\03_firm_ROA_qf_reg.dta, replace
 
 *2.2高管更替回归
 use "statadata\02_firm_turnover.dta", clear
