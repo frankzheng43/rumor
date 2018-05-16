@@ -46,6 +46,8 @@ egen quarter = fill(1[1]4 1[1]4)
 save statadata\formerge_q.dta, replace
 
 // firm-month
+// 扩充样本，补间
+// https://www.statalist.org/forums/forum/general-stata-discussion/general/115594-expand-observations-and-assign-values-to-the-dupliates
 use `Fin_Index'
 keep stkcd indcd year
 // expand 12 times and generate month variable
@@ -56,6 +58,7 @@ egen quarter = fill(1 1 1 2 2 2 3 3 3 4 4 4 1 1 1 2 2 2 3 3 3 4 4 4)
 save statadata\formerge_m.dta, replace
 
 // industry-year 的数据直接用firm-year的就可以。
+
 // industry-quarter
 use `Fin_Index'
 keep stkcd indcd year
@@ -67,6 +70,7 @@ expand 4
 sort indcd year
 egen quarter = fill(1[1]4 1[1]4)
 save statadata\formerge_iq.dta, replace
+
 // industry-month
 use `Fin_Index'
 keep stkcd indcd year
@@ -80,7 +84,5 @@ sort indcd year
 egen month = fill(1[1]12 1[1]12)
 egen quarter = fill(1 1 1 2 2 2 3 3 3 4 4 4 1 1 1 2 2 2 3 3 3 4 4 4)
 save statadata\formerge_im.dta, replace
-
-
 
 log close formerge

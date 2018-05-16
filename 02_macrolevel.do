@@ -82,16 +82,19 @@ replace vio_count = 0 if missing(vio_count)
 replace NO = 0 if missing(NO)
 recode NO ( 1 2 3 4 5 6 7 8 = 1), gen(NO_dum)
 drop _m*
+
 local winsorvar ChinaNewsBasedEPU lnasset tobinq rdspendsumratio lev vio_count
 winsor2 `winsorvar', suffix(_wins) cuts(5 95) label
 gen lgChinaNewsBasedEPU_wins = log(ChinaNewsBasedEPU_wins)
 label var lgChinaNewsBasedEPU_wins "Policy Uncertainty"
+
 egen idmonth = group(year month)
 egen id = group(stkcd)
 egen idind = group(indcd)
 tsset id idmonth
-local CV_wins lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins 
+
 eststo clear
+local CV_wins lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins
 eststo: reghdfe l1.NO lgChinaNewsBasedEPU_wins `CV_wins' if year > 2006 & year < 2016, absorb(id year) cluster(id)
 eststo: logit l1.NO_dum lgChinaNewsBasedEPU_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
 esttab using results\macro_mf.rtf, replace
@@ -108,6 +111,7 @@ merge 1:1  `keyvalue' using statadata\05_cv_q.dta, gen(_mcv)
 replace NO = 0 if missing(NO)
 recode NO ( 1 2 3 4 5 6 7 8 = 1), gen(NO_dum)
 drop _m*
+
 local winsorvar ChinaNewsBasedEPU lnasset tobinq rdspendsumratio lev vio_count
 winsor2 `winsorvar', suffix(_wins) cuts(5 95) label
 gen lgChinaNewsBasedEPU_wins = log( ChinaNewsBasedEPU_wins)
