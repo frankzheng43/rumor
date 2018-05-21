@@ -21,3 +21,8 @@ capture version 14
 local location "F:\rumor"
 cd "`location'"
 capt log close _all
+
+do code/Fin_Sheet.do
+do code/Income_Statement.do
+do code/tobinq.do
+do code/KZ_Index.do

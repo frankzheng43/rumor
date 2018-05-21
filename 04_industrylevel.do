@@ -1,47 +1,37 @@
-import delimited "raw\FS_Combas.txt", varnames(1) clear /// 财务报表数据
-drop in 1/2
-drop if typrep == "B"
-**将会计期间改成日期格式
-gen accper1 = date(accper,"YMD")
-format accper1 %td
-drop accper
-rename accper1 accper
-keep if month(accper) == 12
-order accper, after(stkcd)
-ds stkcd accper typrep, not
-foreach x of var `r(varlist)'{
-	capture confirm string var `x'
-	if _rc==0 {
-destring `x', gen(`x'1)
-drop `x'
-rename `x'1 `x'
-}
-}
-save "statadata\02_firm_FS.dta", replace
+/**
+ * This code is used to perform industry-level regressions
+ * Author: Frank Zheng
+ * Required data: 02_firm_asset.dta 02_firm_RD.dta 02_firm_TB.dta 02_firm_violation_main formerge_m.dta
+ * Required code: too many
+ * Required ssc : -
+ */
 
-*/权重数据
-use "statadata\02_firm_FS.dta", clear
-keep stkcd accper a001000000 a002000000 a0b1103000
-rename a001000000 asset
-rename a002000000 liability
-rename a0b1103000 cash
-gen lnasset = log(asset)
-gen lev = liability/asset
-save "statadata\02_firm_asset.dta", replace
+ // install missing ssc
+ local sscname estout winsor2 
+ foreach pkg of local sscname{
+  cap which `pkg'
+  if _rc!=0{
+        ssc install `pkg'
+        }
+ }
 
-use "statadata\02_firm_ROA", clear
-merge 1:1 stkcd accper using "statadata\02_firm_asset.dta"
-*/不匹配的基本都是2开头的B股 以及不在时间范围内的
-keep if _merge == 3
-collapse (mean) ROA [w=asset] , by(indcd year)
-rename ROA ROA_ind
-*计算前三年的行业波动率
-rangestat (sd) ROA_ind, interval(year -3 -1) by(indcd)
-save "statadata\02_industry_ROA.dta", replace
+// setups
+clear all
+set more off
+eststo clear
+capture version 14
+local location F:/rumor
+cd "`location'"
+capt log close _all
+log using logs/ind_reg, name("ind_reg") text replace
 
 *行业年
-use "statadata\02_industry_ROA.dta", clear
-merge 1:1 indcd year using "statadata\01_rumor_yi.dta"
+use statadata/formerge_y.dta, clear
+local keyvalue indcd year 
+merge m:1 `keyvalue' using statadata/01_rumor_yi.dta, gen(_mrumor)
+merge m:1 `keyvalue' using statadata/02_industry_ROA.dta, gen(_mroa)
+merge m:1 `keyvalue' using statadata/05_cv_y.dta, gen(_mcv)
+
 rename NO NO_ind
 replace NO_ind = 0 if missing(NO_ind)
 recode NO_ind ( 1 2 3 4 5 6 7 8 = 1), gen(NO_ind_dum)
