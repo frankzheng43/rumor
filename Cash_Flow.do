@@ -1,3 +1,11 @@
+/**
+ * This code is used to import and clean cash flow statement data
+ * Author: Frank Zheng
+ * Required data: FS_Comscfi.txt
+ * Required code: -
+ * Required ssc : winsor2 setout
+ */
+
 // install missing ssc
  local sscname estout winsor2 
  foreach pkg of local sscname{
@@ -15,7 +23,7 @@ capture version 14
 local location F:/rumor
 cd "`location'"
 capt log close _all
-log using Cash_Flow, name("Cash_Flow") text replace
+log using logs/Cash_Flow, name("Cash_Flow") text replace
 
 import delimited raw/FS_Comscfi.txt, encoding(UTF-8) varnames(1) clear
 
@@ -55,6 +63,6 @@ foreach x of var `r(varlist)'{
 	}
 
 label data "现金流量表（间接法）"
-save "statadata/02_firm_CF.dta", replace
+save statadata/02_firm_CF.dta, replace
 
 log close Cash_Flow

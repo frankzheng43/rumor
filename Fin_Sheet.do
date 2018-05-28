@@ -23,7 +23,7 @@ capture version 14
 local location F:/rumor
 cd "`location'"
 capt log close _all
-log using Fin_Sheet, name("Fin_Sheet") text replace
+log using logs/Fin_Sheet, name("Fin_Sheet") text replace
 
 import delimited raw/FS_Combas.txt, encoding(UTF-8) varnames(1) clear
 
@@ -42,9 +42,12 @@ program str_to_numeric
 gen `1'1 = date( `1' ,"YMD")
 format `1'1 %td
 order `1'1, after(`1')
+local lab: variable label `1'
+label var `1'1 `lab'
 drop `1' 
 rename `1'1 `1' 
 end
+
 str_to_numeric accper
 keep if month(accper) == 12
 
@@ -62,4 +65,4 @@ foreach x of var `r(varlist)'{
 label data "资产负债表"
 save "statadata/02_firm_FS.dta", replace
 
-log close Fin_Sheet
+log close logs/Fin_Sheet

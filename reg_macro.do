@@ -44,13 +44,13 @@ forvalues i = 1/4{
     eststo: quietly reg l`i'.`x' lgChinaNewsBasedEPU_wins if year > 2006 & year < 2016
   }
 }
-esttab using results\macro_m.rtf, label replace
-esttab using results\macro_m.xls, label replace
-save statadata\03_macro_reg.dta, replace
+esttab using results/macro_m.rtf, label replace
+esttab using results/macro_m.xls, label replace
+save statadata/03_macro_reg.dta, replace
 
 // reg by quarter
 *  can't add CVs
-use "statadata\02_macro_q.dta", clear
+use "statadata/02_macro_q.dta", clear
 merge 1:1 year quarter using "statadata\01_rumor_q.dta"
 winsor ChinaNewsBasedEPU, gen(ChinaNewsBasedEPU_wins) p(0.05)
 gen lgChinaNewsBasedEPU_wins = log(ChinaNewsBasedEPU_wins)
@@ -67,17 +67,17 @@ forvalues i = 1/4{
     eststo: quietly reg l`i'.`x' lgChinaNewsBasedEPU_wins  i.quarter if year > 2006 & year < 2016
   }
 }
-esttab using results\macro_q.rtf, label replace
-esttab using results\macro_q.xls, label replace
-save statadata\03_macro_q_reg.dta, replace
+esttab using results/macro_q.rtf, label replace
+esttab using results/macro_q.xls, label replace
+save statadata/03_macro_q_reg.dta, replace
 
 // reg by firm-month
-use statadata\formerge_m.dta, clear
-merge m:1 year month using statadata\02_macro.dta, gen(_mmacro)
+use statadata/formerge_m.dta, clear
+merge m:1 year month using statadata/02_macro.dta, gen(_mmacro)
 keep if _mmacro == 3
 local keyvalue stkcd year month
-merge m:1  `keyvalue' using statadata\01_rumor_mf.dta, gen(_mrumor)
-merge 1:1  `keyvalue' using statadata\05_cv_m.dta, gen(_mcv)
+merge m:1  `keyvalue' using statadata/01_rumor_mf.dta, gen(_mrumor)
+merge 1:1  `keyvalue' using statadata/05_cv_m.dta, gen(_mcv)
 replace vio_count = 0 if missing(vio_count)
 replace NO = 0 if missing(NO)
 recode NO ( 1 2 3 4 5 6 7 8 = 1), gen(NO_dum)
@@ -97,12 +97,12 @@ eststo clear
 local CV_wins lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins
 eststo: reghdfe l1.NO lgChinaNewsBasedEPU_wins `CV_wins' if year > 2006 & year < 2016, absorb(id year) cluster(id)
 eststo: logit l1.NO_dum lgChinaNewsBasedEPU_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
-esttab using results\macro_mf.rtf, replace
-save "statadata\03_macro_reg_mf.dta", replace 
+esttab using results/macro_mf.rtf, replace
+save "statadata/03_macro_reg_mf.dta", replace 
 
 // TODO firm-month and firm-quarter can be combined together
 // reg by firm-quarter
-use "statadata\formerge_q.dta", clear
+use "statadata/formerge_q.dta", clear
 merge m:1 year quarter using "statadata\02_macro_q.dta", gen(_mmacro)
 keep if _mmacro == 3
 local keyvalue stkcd year quarter

@@ -20,13 +20,13 @@ clear all
 set more off
 eststo clear
 capture version 14
-local location "F:\rumor"
+local location F:/rumor
 cd "`location'"
 capt log close _all
-log using logs\locchange, name("locchange") text replace
+log using logs/locchange, name("locchange") text replace
 
 // 公司地址变更数据
-import delimited "raw\STK_ListedCoInfoChg.txt", varnames(1) encoding(UTF-8) stringcols(3) clear
+import delimited raw/STK_ListedCoInfoChg.txt, varnames(1) encoding(UTF-8) stringcols(3) clear
 rename symbol stkcd
 drop securityid listedcoid v9 v10
 drop if missing(stkcd)
@@ -47,6 +47,6 @@ foreach x of local datevar{
 
 quietly tab changeditem, sort gen(changeditem)
 // keep if changeditem == "办公地址"
-save "statadata\02_firm_loc.dta", replace
+save statadata/02_firm_loc.dta, replace
 
 log close locchange

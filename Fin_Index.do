@@ -23,9 +23,9 @@ capture version 14
 local location "F:/rumor"
 cd "`location'"
 capt log close _all
-log using rumor, name("financial index") text replace
+log using logs/financial_index, name("financial_index") text replace
 
-import delimited "raw\FI_T5.txt", varnames(1) clear ///比率数据
+import delimited raw/FI_T5.txt, varnames(1) clear ///比率数据
 
 drop in 1/2
 drop if typrep == "B"
@@ -37,9 +37,12 @@ program str_to_numeric
 gen `1'1 = date( `1' ,"YMD")
 format `1'1 %td
 order `1'1, after(`1')
+local lab: variable label `1'
+label var `1'1 `lab'
 drop `1' 
 rename `1'1 `1' 
 end
+
 str_to_numeric accper
 gen year = year(accper)
 order year, after(accper)
@@ -56,5 +59,5 @@ foreach x of var `r(varlist)'{
 		}
 	}
 
-save "statadata\02_firm.dta", replace 
+save statadata/02_firm.dta, replace 
 log close

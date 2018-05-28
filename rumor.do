@@ -7,7 +7,7 @@ capture version 14
 local location F:/rumor
 cd "`location'"
 capt log close _all
-log using rumor, text replace
+log using logs/rumor, text replace
 
 /*在导入之前，先将数字中的文字删除更改格式，将错误放置的列更改，空缺的列名填上。*/
 /*导入数据*/
@@ -88,7 +88,7 @@ save statadata/01_rumor.dta, replace
 *-------按季度
 use statadata/01_rumor.dta,clear
 gen quarter = quarter(Evtday)
-collapse (count) NO, by(year quarter)
+collapse (count) NO (mean) attitute (mean) wording1 (mean) wording2 (mean) wording2 , by(year quarter)
 save statadata/01_rumor_q.dta, replace
 
 *----- 按月份

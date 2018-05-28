@@ -3,7 +3,7 @@
  * Author: Frank Zheng
  * Required data: TRD_Dalyr.txt
  * Required code: -
- * Required ssc : winsor setout
+ * Required ssc : winsor2 setout
  */
 
  // install missing ssc
@@ -26,21 +26,28 @@ capt log close _all
 log using logs/trade, name("trade") text replace
 
 import delimited raw/TRD_Dalyr.txt, varnames(1) clear
+foreach var of varlist * {
+  label variable `var' "`=`var'[1]'"
+}
 drop in 1/2
 
 /** This program is used to convert string date to numeric date*/
 capture program drop str_to_numeric
 program str_to_numeric
-gen `1'1 = date(`1' ,"YMD")
+gen `1'1 = date( `1' ,"YMD")
 format `1'1 %td
 order `1'1, after(`1')
+local lab: variable label `1'
+label var `1'1 `lab'
 drop `1' 
 rename `1'1 `1' 
 end
+
 local datevar trddt capchgdt
 foreach x of local datevar{
 	str_to_numeric `x'
 }
+gen year = year(trddt)
 
 quietly ds stkcd trddt capchgdt, not
 foreach x of var `r(varlist)'{
@@ -51,10 +58,12 @@ foreach x of var `r(varlist)'{
 		rename `x'1 `x'
 		}
 	}
-
+	
+drop if inlist(substr(stkcd,1,1),"2","3","9")
 keep if markettype == 1 | markettype ==4
 keep if year > 2000 & year < 2018
-gen year = year(trddt)
+
+label data "日交易数据"
 
 save statadata/02_trddta.dta, replace
 
