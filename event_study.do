@@ -4,7 +4,8 @@
  * Required data: 02_trddta.dta 01_rumor.dta hs300.dta 
  * Required code: -
  * Required ssc : -
- * ref: https://dss.princeton.edu/online_help/stats_packages/stata/eventstudy.html * ref:http://www.sunwoohwang.com/Event_Study_STATA.pdf */
+ * ref: https://dss.princeton.edu/online_help/stats_packages/stata/eventstudy.html 
+ * ref:http://www.sunwoohwang.com/Event_Study_STATA.pdf */
 
 // install missing ssc
  local sscname estout winsor2 
@@ -63,7 +64,7 @@ drop _merge
 egen group_id = group(stkcd set)
 
 bysort group_id:gen datenum = _n
-bysort group_id:gen target = datenum if trddt == Evntdate //标记事件发生当日 evbtdate是传闻出现时，可以换成澄清出现时
+bysort group_id:gen target = datenum if trddt == Evtday //标记事件发生当日 evbtdate是传闻出现时，可以换成澄清出现时
 egen td = max(target), by(group_id)
 drop target
 gen dif = datenum - td
@@ -103,5 +104,18 @@ gen test =(1/sqrt(7)) * ( CAR /ar_sd)
 list stkcd group_id CAR test if dif == 0
 reg CAR if dif==0, robust
 
-save statadata/eventstudy.dta, replace
+save statadata/eventstudy1.dta, replace
 log close
+//t检验
+keep if event_window == 1
+bysort dif: ttest AR = 0
+//好像事前的很显著，事后不显著
+//画图
+sort stkcd Evtday
+keep if !missing(AR)
+sort stkcd group_id trddt
+collapse (mean) AR, by(dif)
+graph twoway connected AR dif
+graph save Graph F:/rumor/graph/澄清后1.gph
+save f:/rumor/statadata/car1.dta
+
