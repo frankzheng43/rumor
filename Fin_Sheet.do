@@ -49,6 +49,7 @@ rename `1'1 `1'
 end
 
 str_to_numeric accper
+
 keep if month(accper) == 12
 
 quietly ds stkcd accper typrep, not
