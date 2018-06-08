@@ -20,15 +20,15 @@ clear all
 set more off
 eststo clear
 capture version 14
-local location "F:\rumor"
+local location "F:/rumor"
 cd "`location'"
 capt log close _all
-log using logs\turnover, name("turnover") text replace
+log using logs/turnover, name("turnover") text replace
 
 // TODO 如果可以补间的话可以试试(formerge)
 // 高管更替数据1
 
-import delimited raw\TMT_Position.txt, varnames(1) encoding(UTF-8) stringcols(1) clear
+import delimited raw/TMT_Position.txt, varnames(1) encoding(UTF-8) stringcols(1) clear
 
 /** This program is used to convert string date to numeric date*/
 capture program drop str_to_numeric
@@ -69,10 +69,10 @@ foreach x of var `r(varlist)'{
 	rename `x' `x'_1
 }
 
-save statadata\02_firm_board.dta, replace
+save statadata/02_firm_board.dta, replace
 
 // 高管更替数据2
-import delimited raw\CG_Ceo.csv, varnames(1) encoding(UTF-16) stringcols(1) clear
+import delimited raw/CG_Ceo.csv, varnames(1) encoding(UTF-16) stringcols(1) clear
 
 drop v19 v20 v21
 
@@ -84,7 +84,7 @@ foreach x of local datevar{
 destring years, replace force
 gen month = month(annodt)
 gen year = year(annodt)
-save statadata\02_firm_turnover.dta, replace
+save statadata/02_firm_turnover.dta, replace
 
 // 高管更替数据3
 
