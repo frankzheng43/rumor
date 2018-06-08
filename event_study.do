@@ -100,7 +100,7 @@ bysort id: egen CAR = sum(AR)
 //t-test
 sort id trddt
 by id: egen ar_sd = sd(AR) 
-gen test =(1/sqrt(7)) * ( CAR /ar_sd) 
+gen test =(1/sqrt(7))*(CAR/ar_sd) 
 list stkcd group_id CAR test if dif == 0
 reg CAR if dif==0, robust
 
@@ -118,4 +118,12 @@ collapse (mean) AR, by(dif)
 graph twoway connected AR dif
 graph save Graph F:/rumor/graph/澄清后1.gph
 save f:/rumor/statadata/car1.dta
+
+//误差图
+keep if event_window == 1
+collapse (mean) mean_AR = AR (sd) sd_AR = AR, by(dif)
+serrbar mean_AR sd_AR dif
+
+//
+logit attitute AR if dif == 0 & AR < 0.4 //检验当日超额收益是不是传闻最终成真的有效预测变量
 
