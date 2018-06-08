@@ -34,3 +34,38 @@ forvalues i = 1/4{
 		eststo: quietly xtreg l`i'.`x' lgChinaNewsBasedEPU_wins `CV' i.year i.idind if year > 2006 & year < 2016, fe vce(robust)
 	}
 }
+
+
+//violation的数据处理
+use statadata/02_firm_violation_main.dta, clear
+gen year = year(disposaldate)
+gen month = month(disposaldate)
+gen quarter = quarter(disposaldate)
+order year month quarter, after(stkcd)
+// 由于是月度数据，可以合并到年/季度/月份，因此先保存等后续使用
+tempfile violation
+save `violation'
+// 月度数据
+use `violation'
+collapse (count) penalty, by(stkcd year quarter month)
+sort stkcd year quarter month
+rename penalty vio_count
+label var vio_count "the number of violation"
+tempfile violation_m
+save `violation_m'
+//季度数据
+use `violation'
+collapse (count) penalty, by(stkcd year quarter)
+sort stkcd year quarter 
+rename penalty vio_count
+label var vio_count "the number of violation"
+tempfile violation_q
+save `violation_q'
+//年度数据
+use `violation'
+collapse (count) penalty, by(stkcd year)
+sort stkcd year
+rename penalty vio_count
+label var vio_count "the number of violation"
+tempfile violation_y
+save `violation_y'
