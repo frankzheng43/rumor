@@ -33,16 +33,18 @@ merge 1:1 `keyvalue' using statadata/02_firm_ROA.dta, gen(_mroa)
 merge 1:1 `keyvalue' using statadata/05_cv_y.dta, gen(_mcv)
 merge 1:1 `keyvalue' using statadata/kz_index.dta, gen(_mkz)
 sort stkcd year 
-
 drop _m* id accper
-replace vio_count = 0 if missing(vio_count)
+
+//replace vio_count = 0 if missing(vio_count)
 replace NO = 0 if missing(NO)
-recode NO (1 2 3 4 5 6 7 8 = 1), gen(NO_dum)
+recode NO (0 = 0) (else = 1), gen(NO_dum)
 order NO_dum, after(NO)
 
 local winsorvar ROA_sd lnasset tobinq rdspendsumratio lev SA
-winsor2 `winsorvar', replace cuts(5 95) label
-
+winsor2 `winsorvar', replace cuts(5 95) 
+label var NO "Rumor"
+label var NO_dum "Rumor_dum"
+label var tobinq "TobinQ"
 egen id = group(stkcd)
 tsset id year
 
@@ -59,29 +61,32 @@ local keyvalue stkcd year
 merge 1:1 `keyvalue' month using statadata/01_rumor_mf.dta, gen(_mrumor)
 merge m:1 `keyvalue' using statadata/02_firm_ROA.dta, gen(_mroa)
 merge 1:1 `keyvalue' month using statadata/05_cv_m.dta, gen(_mcv)
-merge 1:1 `keyvalue' month using statadata/02_firm_turnover_mf.dta, gen(_mturnover)
+//merge 1:1 `keyvalue' month using statadata/02_firm_turnover_mf.dta, gen(_mturnover)
 
 drop _m* id accper enddate
-rename edca count_turnover
-replace count_turnover = 0 if missing(count_turnover)
-replace vio_count = 0 if missing(vio_count)
+//rename edca count_turnover
+//replace count_turnover = 0 if missing(count_turnover)
+//replace vio_count = 0 if missing(vio_count)
 replace NO = 0 if missing(NO)
-recode NO (1 2 3 4 5 6 7 8 = 1), gen(NO_dum)
+recode NO (0 = 0) (else = 1), gen(NO_dum)
 order NO_dum, after(NO)
 
-local winsorvar ROA_sd lnasset tobinq rdspendsumratio lev
-winsor2 `winsorvar', replace cuts(5 95) label
+local winsorvar ROA_sd lnasset tobinq rdspendsumratio lev SA
+winsor2 `winsorvar', replace cuts(5 95) 
+label var NO "Rumor"
+label var NO_dum "Rumor_dum"
+label var tobinq "TobinQ"
 
 egen id = group(stkcd)
 egen idmonth = group(year month)
 tsset id idmonth
 
-eststo clear
-local CV lnasset tobinq rdspendsumratio lev
+eststo clear 
+local CV lnasset tobinq rdspendsumratio lev SA
 eststo: reghdfe l1.NO ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
-eststo: reghdfe l1.NO count_turnover `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+//eststo: reghdfe l1.NO count_turnover `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
 eststo: logit l1.NO_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
-esttab using results/firm_mf.rtf, replace
+esttab using results/firm_mf.rtf, label replace
 save statadata/03_firm_ROA_mf_reg.dta, replace
 
 *2.1.3ROA回归（公司季度）
@@ -92,13 +97,13 @@ merge m:1 `keyvalue' using statadata/02_firm_ROA.dta, gen(_mroa)
 merge 1:1 `keyvalue' quarter using statadata/05_cv_q.dta, gen(_mcv)
 
 drop _m* id accper enddate
-replace vio_count = 0 if missing(vio_count)
+//replace vio_count = 0 if missing(vio_count)
 replace NO = 0 if missing(NO)
-recode NO (1 2 3 4 5 6 7 8 = 1), gen(NO_dum)
+recode NO (0 = 0) (else = 1), gen(NO_dum)
 order NO_dum, after(NO)
 
-local winsorvar ROA_sd lnasset tobinq rdspendsumratio lev
-winsor2 `winsorvar', replace cuts(5 95) label
+local winsorvar ROA_sd lnasset tobinq rdspendsumratio lev SA 
+winsor2 `winsorvar', replace cuts(5 95)
 
 egen id = group(stkcd)
 egen idquarter = group(year quarter)
@@ -106,10 +111,10 @@ egen idind = group(indcd)
 tsset id idquarter
 
 eststo clear
-local CV lnasset tobinq rdspendsumratio lev
+local CV lnasset tobinq rdspendsumratio lev SA 
 eststo: reghdfe l1.NO ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
 eststo: logit l1.NO_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
-esttab using results/firm_qf.rtf, replace
+esttab using results/firm_qf.rtf, label replace
 save statadata/03_firm_ROA_qf_reg.dta, replace
 
 //随意测试
