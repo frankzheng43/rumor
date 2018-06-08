@@ -24,6 +24,7 @@ import delimited raw/FS_Comins.txt, encoding(UTF-8) varnames(1) clear
 foreach var of varlist * {
   label variable `var' "`=`var'[1]'"
 }
+
 drop in 1/2
 drop if typrep == "B"
 drop if inlist(substr(stkcd,1,1),"2","3","9")
