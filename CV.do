@@ -42,7 +42,7 @@ save `RD'
 use statadata/02_firm_TB.dta, clear
 gen year = year(accper)
 order year, after(stkcd)
-// 使用的是TobinQ B值：市值A/（资产总计—无形资产净额—商誉净额）
+*使用的是TobinQ B值：市值A/（资产总计—无形资产净额—商誉净额）
 keep stkcd year accper indcd f100902a 
 rename f100902a tobinq
 tempfile TobinQ
@@ -61,6 +61,8 @@ merge m:1 `keyvalue' using `RD', gen (_mRD)
 merge m:1 `keyvalue' using `TobinQ', gen (_mTobinQ)
 merge m:1 `keyvalue' using `kz_index', gen (_mkz)
 //merge 1:1 `keyvalue' month using `violation_m', gen (_mviolationm)
+drop _m* enddate
+sort stkcd year quarter month
 save statadata/05_cv_m.dta, replace
 
 // use `ex_vio'
@@ -87,7 +89,7 @@ local keyvalue stkcd year
 merge 1:1 `keyvalue' using `RD', gen (_mRD)
 merge 1:1 `keyvalue' using `TobinQ', gen (_mTobinQ)
 merge 1:1 `keyvalue' using `kz_index', gen (_mkz)
-//merge 1:1 `keyvalue' using `violation_y', gen(_mviolationy)
+// merge 1:1 `keyvalue' using `violation_y', gen(_mviolationy)
 // some cleaning 
 drop accper enddate
 order indcd, after(stkcd)
