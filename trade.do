@@ -26,9 +26,12 @@ capt log close _all
 log using logs/trade, name("trade") text replace
 
 import delimited raw/TRD_Dalyr.txt, varnames(1) clear
-foreach var of varlist * {
-  label variable `var' "`=`var'[1]'"
-}
+
+// https://www.stata.com/statalist/archive/2011-09/msg01109.html
+// label variables with the first row
+//foreach var of varlist * {
+  //label variable `var' "`=`var'[1]'"
+//}
 drop in 1/2
 
 /** This program is used to convert string date to numeric date*/
@@ -60,7 +63,7 @@ foreach x of var `r(varlist)'{
 	}
 	
 drop if inlist(substr(stkcd,1,1),"2","3","9")
-keep if markettype == 1 | markettype ==4
+keep if markettype == 1 | markettype == 4
 keep if year > 2000 & year < 2018
 
 label data "日交易数据"

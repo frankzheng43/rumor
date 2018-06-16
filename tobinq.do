@@ -25,7 +25,7 @@ cd "`location'"
 capt log close _all
 log using tobinq, name("tobinq") text replace
 
-import delimited raw/FI_T10.txt, encoding(UTF-8) varnames(1) clear
+import delimited raw/FI_T10.txt, varnames(1) clear
 
 // https://www.stata.com/statalist/archive/2011-09/msg01109.html
 // label variables with the first row
