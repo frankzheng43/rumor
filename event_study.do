@@ -7,15 +7,6 @@
  * ref: https://dss.princeton.edu/online_help/stats_packages/stata/eventstudy.html 
  * ref:http://www.sunwoohwang.com/Event_Study_STATA.pdf */
 
-// install missing ssc
- local sscname estout winsor2 
- foreach pkg of local sscname {
-  cap which  `pkg'
-  if _rc!=0{
-        ssc install `pkg'
-        }
- }
- 
 //setups
 clear all
 set more off
