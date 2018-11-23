@@ -1,8 +1,4 @@
-/**
- *
- * This code is the control panel of other codes
- *
- */
+/* 控制台 */
 
 // setups
 clear all

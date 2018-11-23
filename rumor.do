@@ -1,5 +1,6 @@
-// TODO: reading in labels from external file
+/* 传闻原始数据（按年份分sheet）=> 传闻数据 */
 
+/* setups */
 clear all
 set more off
 eststo clear
@@ -9,14 +10,15 @@ cd "`location'"
 capt log close _all
 log using logs/rumor, text replace
 
-/*在导入之前，先将数字中的文字删除更改格式，将错误放置的列更改，空缺的列名填上。*/
-/*导入数据*/
-
+/* 在导入之前，先将数字中的文字删除更改格式，将错误放置的列更改，空缺的列名填上。*/
+/* 导入数据 */
+/* 每个sheet都输出成dta格式 */
 forvalues i=2007/2015{
 	import excel raw/clarification.xls, sheet(`i') firstrow clear
 	save statadata/00raw_`i'.dta, replace
 	}
 
+/* 数据清洗 */
 use statadata/00raw_2007.dta
 drop U - X
 save statadata/00raw_2007.dta, replace
@@ -52,16 +54,16 @@ use statadata/00raw_2015.dta
 drop S
 save statadata/00raw_2015.dta, replace
 
+/* 数据append */
 use statadata/00raw_2007.dta
 forvalues i=2008/2015{
 	append using statadata/00raw_`i'.dta,force
 	}
-	
-rename D Evntdate_workday	
-	
+
+rename D Evntdate_workday		
 drop if missing(Firm)
 
-/** 去掉SZ SH的后缀*/ 
+/* 去掉SZ SH的后缀 */ 
 gen Firm_new = substr(Firm,1,6)
 drop Firm
 rename Firm_new stkcd
@@ -80,11 +82,9 @@ replace wording`i' = 0 if missing(wording`i')
 
 gen year = year(Evtday)
 gen month = month(Evtday)
-// 对传闻的内容进行再分类
-// gen content_r = "其他" if regexm(content,"其他") == 1
 save statadata/01_rumor.dta, replace
 
-
+/* 季度/月份/年份 公司/行业 */
 *-------按季度
 use statadata/01_rumor.dta,clear
 gen quarter = quarter(Evtday)

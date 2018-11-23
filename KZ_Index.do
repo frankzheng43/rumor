@@ -1,15 +1,4 @@
-/**
-控制变量：资金约束
- */
-
- // install missing ssc
- local sscname estout winsor2 
- foreach pkg of local sscname{
-  cap which  `pkg'
-  if _rc!=0{
-        ssc install `pkg'
-        }
- }
+/* 控制变量：资金约束 */
 
 // setups
 clear all

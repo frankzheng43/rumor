@@ -1,6 +1,4 @@
-/*
-沪深300指数
-*/
+/* 沪深300指数 */
 clear all
 set more off
 eststo clear

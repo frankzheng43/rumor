@@ -1,4 +1,4 @@
-/*暂时不用*/
+/* 暂时不用 */
 forvalues i=2007/2015{
 	use "F:\rumor\00raw_`i'.dta", clear
 	capture confirm string var Evtday

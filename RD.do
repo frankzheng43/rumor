@@ -1,6 +1,4 @@
-/**
- RD数据
- */
+/* RD数据 */
 
 // setups
 clear all

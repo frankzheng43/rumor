@@ -1,6 +1,4 @@
-/**
- * 本代码用于进行各类统计图的制作
- */
+/* 图表制作 */
 
 local location "F:/rumor"
 cd "`location'"

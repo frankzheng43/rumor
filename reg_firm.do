@@ -6,14 +6,6 @@
  * Required ssc : -
  */
 
- // install missing ssc
- local sscname estout winsor2 
- foreach pkg of local sscname{
-  cap which `pkg'
-  if _rc!=0{
-        ssc install `pkg'
-        }
- }
 //TODO 将collapse的过程全部当作tempfile过程
 // setups
 clear all

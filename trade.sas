@@ -37,6 +37,7 @@ format Adjprcnd 32.5 ;
 format Markettype $8. ;
 format Capchgdt YYMMDD10.;
 format Trdsta $8. ;
+
 input
 Stkcd $
 Trddt $
