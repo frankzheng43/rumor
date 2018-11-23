@@ -1,9 +1,5 @@
 /**
- * This code if used to import and clean financial statement data
- * Author : Frank Zheng
- * Required data: 02_firm_asset.dta 02_firm_RD.dta 02_firm_TB.dta 02_firm_violation_main formerge_m.dta
- * Required code: too many
- * Required ssc : -
+资产负债表
  */
 
  // install missing ssc

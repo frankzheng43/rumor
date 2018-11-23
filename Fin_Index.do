@@ -1,19 +1,6 @@
 /**
- * This code is used to import and clean financial index data
- * Author: Frank Zheng
- * Required data: -
- * Required code: -
- * Required ssc : -
+控制变量：财务比率数据
  */
-
-// install missing ssc
- local sscname estout  
- foreach pkg of local sscname{
-  cap which  `pkg'
-  if _rc!=0{
-        ssc install `pkg'
-        }
- }
 
 // setups
 clear all

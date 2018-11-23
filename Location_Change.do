@@ -1,19 +1,6 @@
 /**
- * This code is used to import and clean company location change data 
- * Author: Frank Zheng
- * Required data: STK_ListedCoInfoChg.txt
- * Required code: - 
- * Required ssc : - 
+上市公司信息变更=>上市公司地址变更
  */
-
- // install missing ssc
- local sscname estout winsor2 
- foreach pkg of local sscname{
-  cap which  `pkg'
-  if _rc!=0{
-        ssc install `pkg'
-        }
- }
 
 // setups
 clear all
