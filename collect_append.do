@@ -1,3 +1,4 @@
+/*将第一步收集的数据append起来*/
 clear all
 set more off
 eststo clear
