@@ -1,19 +1,6 @@
 /**
- *This code is used to merge different control variables and construct a whole dataset
- *Author : Frank Zheng
- * Required data: 02_firm_asset.dta 02_firm_RD.dta 02_firm_TB.dta 02_firm_violation_main formerge_m.dta
- * Required code: too many
- * Required ssc : -
+ 控制变量整合成一个文件
  */
-
- // install missing ssc
- local sscname estout winsor2 
- foreach pkg of local sscname{
-  cap which  `pkg'
-  if _rc!=0{
-        ssc install `pkg'
-        }
- }
 
 // setups
 clear all
