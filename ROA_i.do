@@ -23,7 +23,7 @@ capture version 14
 local location F:/rumor
 cd "`location'"
 capt log close _all
-log using ROA_i, name("ROA_i") text replace
+log using logs/ROA_i, name("ROA_i") text replace
 
 */权重数据
 use statadata/02_firm_FS.dta, clear

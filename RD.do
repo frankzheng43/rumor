@@ -8,7 +8,7 @@ capture version 14
 local location "F:\rumor"
 cd "`location'"
 capt log close _all
-log using logs\rd, name("rd") text replace
+log using logs/rd, name("rd") text replace
 
 // 研发投入的数据
 import delimited F:\rumor\raw\PT_LCRDSpending.txt, varnames(1) encoding(UTF-8) clear

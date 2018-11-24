@@ -8,7 +8,7 @@ capture version 14
 local location F:/rumor
 cd "`location'"
 capt log close _all
-log using firm_info, name("firm_info") text replace
+log using logs/firm_info, name("firm_info") text replace
 
 import delimited raw/TRD_Co.txt, encoding(UTF-8) varnames(1) clear
 

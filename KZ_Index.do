@@ -8,7 +8,7 @@ capture version 14
 local location "F:/rumor"
 cd "`location'"
 capt log close _all
-log using kz_index, name("kz_index") text replace
+log using logs/kz_index, name("kz_index") text replace
 
 use statadata/02_firm_FS.dta, clear
 tempfile firm_FS

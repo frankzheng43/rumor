@@ -6,15 +6,6 @@
  * Required ssc : winsor setout
  */
 
- // install missing ssc
- local sscname estout winsor2 
- foreach pkg of local sscname{
-  cap which  `pkg'
-  if _rc!=0{
-        ssc install `pkg'
-        }
- }
-
 // setups
 clear all
 set more off

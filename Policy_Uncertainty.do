@@ -20,7 +20,7 @@ capture version 14
 local location "F:\rumor"
 cd "`location'"
 capt log close _all
-log using logs\policy_uncertainty, name(policy_uncertainty) text replace
+log using logs/policy_uncertainty, name(policy_uncertainty) text replace
 
 // import raw data 
 import excel using "raw\China_Policy_Uncertainty_Data.xlsx", firstrow clear

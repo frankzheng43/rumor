@@ -7,7 +7,7 @@ capture version 14
 local location F:/rumor
 cd "`location'"
 capt log close _all
-log using Income_Statement, name("Income_Statement") text replace
+log using logs/Income_Statement, name("Income_Statement") text replace
 
 import delimited raw/FS_Comins.txt, encoding(UTF-8) varnames(1) clear
 

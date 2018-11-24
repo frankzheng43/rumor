@@ -5,7 +5,7 @@ cd "`location'"
 clear all
 set more off
 capt log close
-log using rumor, text replace
+log using logs/rumor, text replace
 use statadata/01_rumor.dta, clear
 gen year_Evntdate = year(Evntdate_workday)
 gr bar (count), over(year_Evntdate ) title ("传闻样本的年代分布") ytitle ("样本数量")

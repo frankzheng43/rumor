@@ -8,7 +8,7 @@ capture version 14
 local location F:/rumor
 cd "`location'"
 capt log close _all
-log using tobinq, name("tobinq") text replace
+log using logs/tobinq, name("tobinq") text replace
 
 import delimited raw/FI_T10.txt, varnames(1) clear
 

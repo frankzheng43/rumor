@@ -10,7 +10,7 @@ capture version 14
 local location "F:/rumor"
 cd "`location'"
 capt log close _all
-log using control_variables, name("control variables") text replace
+log using logs/control_variables, name("control variables") text replace
 
 // save all datasets to tempfile
 use statadata/02_firm_asset.dta, clear

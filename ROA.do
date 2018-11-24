@@ -14,7 +14,7 @@ capture version 14
 local location "F:\rumor"
 cd "`location'"
 capt log close _all
-log using logs\ROA, name("ROA") text replace
+log using logs/ROA, name("ROA") text replace
 
 
 use statadata\02_firm.dta, clear

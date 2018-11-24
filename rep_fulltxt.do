@@ -10,7 +10,7 @@ capture version 14
 local location F:/rumor
 cd "`location'"
 capt log close _all
-log using full_txt, name("full_txt") text replace
+log using logs/full_txt, name("full_txt") text replace
 
 set excelxlsxlargefile on
 import excel raw/ANN_SummaryInfo.xlsx, sheet("Sheet1") firstrow clear

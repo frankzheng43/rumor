@@ -23,7 +23,7 @@ capture version 14
 local location "F:\rumor"
 cd "`location'"
 capt log close _all
-log using logs\violation, name("violation") text replace
+log using logs/violation, name("violation") text replace
 
 //违规数据（明细数据）
 import delimited raw\STK_Violation_Son.txt, varnames(1) encoding(UTF-8) clear

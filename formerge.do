@@ -15,7 +15,7 @@ capture version 14
 local location "F:\rumor"
 cd "`location'"
 capt log close _all
-log using logs\formerge, name("formerge") text replace
+log using logs/formerge, name("formerge") text replace
 
 // import Fin_Index data 
 use statadata\02_firm.dta, clear
