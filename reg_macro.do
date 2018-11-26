@@ -1,10 +1,4 @@
-/**
- * This code is used to regress macro-level regressions
- * Author: Frank Zheng
- * Required data: 02_macro.dta 02_macro_q.dta 01_rumor_m 01_rumor_q 05_cv_m 05_cv_q
- * Required code: policy uncertainty.do
- * Required ssc : winsor setout
- */
+/* 宏观层面回归： RUMOR=UNCERTAINTY+CV */
 
 // setups
 clear all
@@ -18,7 +12,9 @@ log using logs/macro_reg, name("macro_reg") text replace
 
 // reg by month
 *  can't add CVs
-use statadata/02_macro.dta, clear
+/* 02_macro 政治不确定性 */
+use statadata/02_macro.dta, clear 
+/* 01_rumor 传闻*/
 merge 1:1 year month using statadata/01_rumor_m.dta
 
 winsor ChinaNewsBasedEPU, gen(ChinaNewsBasedEPU_wins) p(0.05)
@@ -30,17 +26,28 @@ drop if missing(NO)
 recode NO (0 = 0) (else = 1), gen(NO_dum)
 egen idmonth = group(year month)
 tsset idmonth
-*均不显著
+
+/* 按月回歸 */
 eststo clear
 forvalues i = 1/4{
-  eststo: quietly reg l`i'.NO lgChinaNewsBasedEPU_wins if year > 2006 & year < 2016
+  eststo: reg l`i'.NO lgChinaNewsBasedEPU_wins if year > 2006 & year < 2016
 }
 esttab using results/macro_m.rtf, label replace
 //esttab using results/macro_m.xls, label replace
 save statadata/03_macro_reg.dta, replace
 
-// reg by quarter
-*  can't add CVs
+/* t檢驗 */
+egen median = median(lgChinaNewsBasedEPU_wins)
+gen group_uncertainty = cond(lgChinaNewsBasedEPU_wins > median, 1, 0)
+ttest NO, by(group_uncertainty)
+egen mean = mean(lgChinaNewsBasedEPU_wins)
+gen group_uncertainty_mean = cond(lgChinaNewsBasedEPU_wins > mean, 1, 0)
+ttest NO, by(group_uncertainty_mean)
+/* NO有显著的极端值 */
+gen lgNO=log(NO)
+scatter lgNO lgChinaNewsBasedEPU_wins if lgNO > 3
+
+/* 按季度回歸 */
 use "statadata/02_macro_q.dta", clear
 merge 1:1 year quarter using statadata/01_rumor_q.dta
 winsor ChinaNewsBasedEPU, gen(ChinaNewsBasedEPU_wins) p(0.05)
@@ -55,11 +62,14 @@ tsset idquarter
 *并不显著，为负
 eststo clear
 forvalues i = 1/4{
-  eststo: quietly reg l`i'.NO lgChinaNewsBasedEPU_wins if year > 2006 & year < 2016
+  eststo: reg l`i'.NO lgChinaNewsBasedEPU_wins if year > 2006 & year < 2016
 }
 esttab using results/macro_q.rtf, label replace
 //esttab using results/macro_q.xls, label replace
 save statadata/03_macro_q_reg.dta, replace
+
+gen lgNO=log(NO)
+scatter lgNO lgChinaNewsBasedEPU_wins if lgNO > 3
 
 // reg by firm-month
 use statadata/formerge_m.dta, clear
@@ -94,7 +104,7 @@ esttab using results/macro_mf.rtf, label replace
 save "statadata/03_macro_reg_mf.dta", replace 
 
 // TODO firm-month and firm-quarter can be combined together
-// reg by firm-quarter
+/* 按季度-公司回归 */
 use "statadata/formerge_q.dta", clear
 merge m:1 year quarter using "statadata/02_macro_q.dta", gen(_mmacro)
 keep if _mmacro == 3
@@ -143,4 +153,3 @@ log close macro_reg
  * Within Stata, reghdfe can be viewed as a generalization of areg/xtreg, 
  * with several additional features:
  */
-
