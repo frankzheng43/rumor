@@ -28,22 +28,22 @@ sort stkcd year
 drop _m* id accper
 
 //replace vio_count = 0 if missing(vio_count)
-replace NO = 0 if missing(NO)
-recode NO (0 = 0) (else = 1), gen(NO_dum)
-order NO_dum, after(NO)
+replace rumor = 0 if missing(rumor)
+recode rumor (0 = 0) (else = 1), gen(rumor_dum)
+order rumor_dum, after(rumor)
 
 local winsorvar ROA_sd lnasset tobinq rdspendsumratio lev SA
 winsor2 `winsorvar', replace cuts(5 95) 
-label var NO "Rumor"
-label var NO_dum "Rumor_dum"
+label var rumor "Rumor"
+label var rumor_dum "Rumor_dum"
 label var tobinq "TobinQ"
 egen id = group(stkcd)
 tsset id year
 
 eststo clear
 local CV lnasset tobinq rdspendsumratio lev SA
-eststo: reghdfe l1.NO ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
-eststo: logit l1.NO_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+eststo: logit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
 esttab using results/firm_y.rtf, replace
 save statadata/03_firm_ROA_reg.dta, replace
 
@@ -59,14 +59,14 @@ drop _m* id accper enddate
 //rename edca count_turnover
 //replace count_turnover = 0 if missing(count_turnover)
 //replace vio_count = 0 if missing(vio_count)
-replace NO = 0 if missing(NO)
-recode NO (0 = 0) (else = 1), gen(NO_dum)
-order NO_dum, after(NO)
+replace rumor = 0 if missing(rumor)
+recode rumor (0 = 0) (else = 1), gen(rumor_dum)
+order rumor_dum, after(rumor)
 
 local winsorvar ROA_sd lnasset tobinq rdspendsumratio lev SA
 winsor2 `winsorvar', replace cuts(5 95) 
-label var NO "Rumor"
-label var NO_dum "Rumor_dum"
+label var rumor "Rumor"
+label var rumor_dum "Rumor_dum"
 label var tobinq "TobinQ"
 
 egen id = group(stkcd)
@@ -75,9 +75,9 @@ tsset id idmonth
 
 eststo clear 
 local CV lnasset tobinq rdspendsumratio lev SA
-eststo: reghdfe l1.NO ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
-//eststo: reghdfe l1.NO count_turnover `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
-eststo: logit l1.NO_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+//eststo: reghdfe l1.rumor count_turnover `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+eststo: logit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
 esttab using results/firm_mf.rtf, label replace
 save statadata/03_firm_ROA_mf_reg.dta, replace
 
@@ -90,9 +90,9 @@ merge 1:1 `keyvalue' quarter using statadata/05_cv_q.dta, gen(_mcv)
 
 drop _m* id accper enddate
 //replace vio_count = 0 if missing(vio_count)
-replace NO = 0 if missing(NO)
-recode NO (0 = 0) (else = 1), gen(NO_dum)
-order NO_dum, after(NO)
+replace rumor = 0 if missing(rumor)
+recode rumor (0 = 0) (else = 1), gen(rumor_dum)
+order rumor_dum, after(rumor)
 
 local winsorvar ROA_sd lnasset tobinq rdspendsumratio lev SA 
 winsor2 `winsorvar', replace cuts(5 95)
@@ -104,8 +104,8 @@ tsset id idquarter
 
 eststo clear
 local CV lnasset tobinq rdspendsumratio lev SA 
-eststo: reghdfe l1.NO ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
-eststo: logit l1.NO_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+eststo: logit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
 esttab using results/firm_qf.rtf, label replace
 save statadata/03_firm_ROA_qf_reg.dta, replace
 

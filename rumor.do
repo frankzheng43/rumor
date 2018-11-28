@@ -69,7 +69,7 @@ drop Firm
 rename Firm_new stkcd
 
 egen id = group(stkcd)
-order stkcd, after(NO)
+order stkcd, after(rumor)
 order Evtday, after(Evntdate_workday)
 drop result industry
 rename altitute attitute
@@ -88,50 +88,50 @@ save statadata/01_rumor.dta, replace
 *-------按季度
 use statadata/01_rumor.dta,clear
 gen quarter = quarter(Evtday)
-collapse (count) NO (mean) attitute wording1 wording2 wording3, by(year quarter)
+collapse (count) rumor (mean) attitute wording1 wording2 wording3, by(year quarter)
 save statadata/01_rumor_q.dta, replace
 
 *----- 按月份
 use statadata/01_rumor.dta
-collapse (count) NO, by(year month)
+collapse (count) rumor, by(year month)
 drop if missing(year)
 save statadata/01_rumor_m.dta, replace
 
 *--------按年份公司
 use statadata/01_rumor.dta, clear
-collapse (count) NO, by(year stkcd)
+collapse (count) rumor, by(year stkcd)
 drop if missing(year)
 save statadata/01_rumor_yf.dta, replace
 
 *-------按季度公司
 use statadata/01_rumor.dta, clear
 gen quarter = quarter(Evtday)
-collapse (count) NO (mean) attitute wording1 wording2 wording3, by(year quarter stkcd)
+collapse (count) rumor (mean) attitute wording1 wording2 wording3, by(year quarter stkcd)
 sort stkcd year quarter
 save statadata/01_rumor_qf.dta, replace
 
 *------按月份公司
 use statadata/01_rumor.dta, clear
-collapse (count) NO (mean) attitute wording1 wording2 wording3, by(year month stkcd)
+collapse (count) rumor (mean) attitute wording1 wording2 wording3, by(year month stkcd)
 drop if missing(year)
 save statadata/01_rumor_mf.dta, replace
 
 *--------按年份行业
 use statadata/03_firm_ROA_reg.dta, clear
 sort indcd stkcd year
-collapse (count) NO, by(year indcd)
+collapse (count) rumor, by(year indcd)
 save statadata/01_rumor_yi.dta, replace
 
 *--------按季度行业
 use statadata/formerge_q.dta, clear
 merge 1:1 stkcd year month using statadata/01_rumor_qf.dta
-collapse (count) NO, by(year month indcd)
+collapse (count) rumor, by(year month indcd)
 save statadata/01_rumor_qi.dta, replace
 
 *--------按月份行业
 use statadata/formerge_m.dta, clear
 merge 1:1 stkcd year month using statadata/01_rumor_mf.dta
-collapse (count) NO, by(year month indcd)
+collapse (count) rumor, by(year month indcd)
 save statadata/01_rumor_mi.dta, replace
 
 log rumor close

@@ -25,14 +25,14 @@ merge 1:1 stkcd trddt using `rumor',gen(_mrumor)
 
 gen year = year(trddt)
 keep if inrange(year, 2007, 2015)
-gen NO = cond(_mrumor == 1, 0, 1)
+gen rumor = cond(_mrumor == 1, 0, 1)
 xtset id iddate
-*²»¼Ó¿ØÖÆ±äÁ¿
-reghdfe l1.NO stds31 if inrange(year,2007,2015), absorb(id year) cluster(id)
+*ï¿½ï¿½ï¿½Ó¿ï¿½ï¿½Æ±ï¿½ï¿½ï¿½
+reghdfe l1.rumor stds31 if inrange(year,2007,2015), absorb(id year) cluster(id)
 
 
 
-reghdfe NO stds31 stds51 stds101 stds301 stds1001 lnasset lev tobinq age SA if inrange(year,2007,2015), absorb(id year) cluster(id)
+reghdfe rumor stds31 stds51 stds101 stds301 stds1001 lnasset lev tobinq age SA if inrange(year,2007,2015), absorb(id year) cluster(id)
 
 import delimited F:\rumor\statadata\std_hs.txt, encoding(UTF-8) varnames(1) stringcols(1) clear
 format trddt %td

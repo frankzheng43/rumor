@@ -60,7 +60,7 @@ duplicates drop stkcd summary_date, force
 
 merge 1:1 stkcd summary_date using `t3', gen(_m2)
 
-//drop NO Evntdate_workday lagtime evidence content stop id year month 
+//drop rumor Evntdate_workday lagtime evidence content stop id year month 
 //drop indcd_r announcementid  number title 
 
 gen rumor_url = .
@@ -76,7 +76,7 @@ tempfile t4
 save `t4'
 
 import excel raw/20180615Reputation-final.xlsx, sheet("sheet1") firstrow allstring clear
-drop obs NO industry111 year Number
+drop obs rumor industry111 year Number
 rename *, lower
 
 rename rdatenew rumor_date_new

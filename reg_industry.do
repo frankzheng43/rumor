@@ -41,18 +41,18 @@ merge m:1 `keyvalue' using `cv_yi', gen(_mcv)
 drop _m* stkcd 
 duplicates drop indcd year, force
 
-rename NO NO_ind
-replace NO_ind = 0 if missing(NO_ind)
-recode NO_ind (0 = 0) (else = 1), gen(NO_ind_dum)
+rename rumor rumor_ind
+replace rumor_ind = 0 if missing(rumor_ind)
+recode rumor_ind (0 = 0) (else = 1), gen(rumor_ind_dum)
 winsor ROA_ind_sd, gen(ROA_ind_sd_wins) p(0.05)
-gen lgNO_ind = log(NO_ind)
+gen lgrumor_ind = log(rumor_ind)
 gen lgROA_ind_sd = log(ROA_ind_sd)
 
 local winsorvar lnasset tobinq rdspendsumratio lev SA
 winsor2 `winsorvar', replace cuts(5 95) 
-label var NO_ind "Rumor"
-label var lgNO_ind "lgRumor"
-label var NO_ind_dum "Rumor_dum"
+label var rumor_ind "Rumor"
+label var lgrumor_ind "lgRumor"
+label var rumor_ind_dum "Rumor_dum"
 label var tobinq "TobinQ"
 
 egen idind = group(indcd)
@@ -60,12 +60,12 @@ tsset idind year
 */全部负向显著。。
 local CV lnasset tobinq rdspendsumratio lev SA
 eststo clear
-eststo: reghdfe l1.NO_ind ROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
-eststo: logit l1.NO_ind_dum ROA_ind_sd `CV' if inrange(year,2007,2015), cluster(idind)
+eststo: reghdfe l1.rumor_ind ROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
+eststo: logit l1.rumor_ind_dum ROA_ind_sd `CV' if inrange(year,2007,2015), cluster(idind)
 *esttab
 *eststo clear
-eststo: reghdfe l1.NO_ind lgROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
-eststo: reghdfe l1.lgNO_ind lgROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
+eststo: reghdfe l1.rumor_ind lgROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
+eststo: reghdfe l1.lgrumor_ind lgROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
 
 esttab using results/firm_yi.rtf, label replace
 save "statadata/03_industry_ROA_reg.dta", replace
@@ -77,18 +77,18 @@ merge m:1 indcd year using statadata/02_industry_ROA.dta, gen(_mroa)
 merge 1:1 indcd year month using "statadata/01_rumor_mi.dta", gen(_mrumor)
 drop _m* 
 
-rename NO NO_ind
-replace NO_ind = 0 if missing(NO_ind)
-recode NO_ind (0 = 0) (else = 1), gen(NO_ind_dum)
+rename rumor rumor_ind
+replace rumor_ind = 0 if missing(rumor_ind)
+recode rumor_ind (0 = 0) (else = 1), gen(rumor_ind_dum)
 winsor ROA_ind_sd, gen(ROA_ind_sd_wins) p(0.05)
-gen lgNO_ind = log(NO_ind)
+gen lgrumor_ind = log(rumor_ind)
 gen lgROA_ind_sd = log(ROA_ind_sd)
 
 */全部负向显著。。
-reg lgNO_ind lgROA_ind_sd if year > 2006 & year < 2016
-reg NO_ind ROA_ind_sd if year > 2006 & year < 2016
-reg NO_ind ROA_ind_sd_wins if year > 2006 & year < 2016
-logit NO_ind_dum ROA_ind_sd if year > 2006 & year < 2016
+reg lgrumor_ind lgROA_ind_sd if year > 2006 & year < 2016
+reg rumor_ind ROA_ind_sd if year > 2006 & year < 2016
+reg rumor_ind ROA_ind_sd_wins if year > 2006 & year < 2016
+logit rumor_ind_dum ROA_ind_sd if year > 2006 & year < 2016
 save "statadata/03_industry_ROA_m_reg.dta", replace
 
 *行业季度
@@ -109,18 +109,18 @@ merge m:1 indcd year quarter using `cv_qi', gen(_mcv)
 drop if missing(indcd)
 drop _m* stkcd
 
-rename NO NO_ind
-replace NO_ind = 0 if missing(NO_ind)
-recode NO_ind (0 = 0) (else = 1), gen(NO_ind_dum)
+rename rumor rumor_ind
+replace rumor_ind = 0 if missing(rumor_ind)
+recode rumor_ind (0 = 0) (else = 1), gen(rumor_ind_dum)
 winsor ROA_ind_sd, gen(ROA_ind_sd_wins) p(0.05)
-gen lgNO_ind = log(NO_ind)
+gen lgrumor_ind = log(rumor_ind)
 gen lgROA_ind_sd = log(ROA_ind_sd)
 
 local winsorvar lnasset tobinq rdspendsumratio lev SA
 winsor2 `winsorvar', replace cuts(5 95) 
-label var NO_ind "Rumor"
-label var lgNO_ind "lgRumor"
-label var NO_ind_dum "Rumor_dum"
+label var rumor_ind "Rumor"
+label var lgrumor_ind "lgRumor"
+label var rumor_ind_dum "Rumor_dum"
 label var tobinq "TobinQ"
 
 egen idind = group(indcd)
@@ -130,12 +130,12 @@ tsset idind idquarter
 */全部负向显著。。
 local CV lnasset tobinq rdspendsumratio lev SA
 eststo clear
-eststo: reghdfe l1.NO_ind ROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
-eststo: logit l1.NO_ind_dum ROA_ind_sd `CV' if inrange(year,2007,2015), cluster(idind)
+eststo: reghdfe l1.rumor_ind ROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
+eststo: logit l1.rumor_ind_dum ROA_ind_sd `CV' if inrange(year,2007,2015), cluster(idind)
 esttab
 *eststo clear
-eststo: reghdfe l1.NO_ind lgROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
-eststo: reghdfe l1.lgNO_ind lgROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
+eststo: reghdfe l1.rumor_ind lgROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
+eststo: reghdfe l1.lgrumor_ind lgROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
 esttab
 esttab using results/firm_qi.rtf, label replace
 save "statadata/03_industry_ROA_q_reg.dta", replace

@@ -28,12 +28,12 @@ destring year, gen(year1)
 drop year
 rename year1 year
 recode month (1 2 3  = 1) (4 5 6 = 2) (7 8 9 = 3) (10 11 12 = 4), gen(quarter)
-*graph bar (mean) ChinaNewsBasedEPU , over(year)
+*graph bar (mean) policy_uncertainty , over(year)
 save "statadata\02_macro.dta", replace
 
 // collapse into quarterly data 
 use "statadata\02_macro.dta", clear
-collapse (mean) ChinaNewsBasedEPU, by(year quarter)
+collapse (mean) policy_uncertainty, by(year quarter)
 save "statadata\02_macro_q.dta", replace
 
 log close 

@@ -28,10 +28,10 @@ rename `1'1 `1'
 end
 
 // 循环做各种回归
-local yvar NO NO_dum
+local yvar rumor rumor_dum
 forvalues i = 1/4{
 	foreach x of local yvar{
-		eststo: quietly xtreg l`i'.`x' lgChinaNewsBasedEPU_wins `CV' i.year i.idind if year > 2006 & year < 2016, fe vce(robust)
+		eststo: quietly xtreg l`i'.`x' lgpolicy_uncertainty_wins `CV' i.year i.idind if year > 2006 & year < 2016, fe vce(robust)
 	}
 }
 
