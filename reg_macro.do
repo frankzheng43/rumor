@@ -19,7 +19,10 @@ log using logs/macro_reg, name("macro_reg") text replace
 use statadata/02_macro.dta, clear 
 /* 01_rumor 传闻*/
 merge 1:1 year month using statadata/01_rumor_m.dta
-
+rename NO rumor
+rename ChinaNewsBasedEPU policy_uncertainty
+drop if missing(rumor)
+drop _m*
 winsor2 policy_uncertainty rumor, suffix(_wins) cuts(5 95)
 gen lgpolicy_uncertainty_wins = log(policy_uncertainty_wins)
 gen lgrumor=log(rumor_wins)
@@ -28,8 +31,6 @@ gen lgrumor=log(rumor_wins)
 label var lgpolicy_uncertainty_wins "Policy Uncertainty"
 label var rumor "Rumor"
 
-
-drop if missing(rumor)
 egen idmonth = group(year month)
 tsset idmonth
 
@@ -56,11 +57,14 @@ ttest rumor, by(`group_uncertainty_mean')
 /* 按季度回歸 */
 use "statadata/02_macro_q.dta", clear
 merge 1:1 year quarter using statadata/01_rumor_q.dta
+rename NO rumor
+rename ChinaNewsBasedEPU policy_uncertainty
 
 winsor2 policy_uncertainty rumor, suffix(_wins) cuts(5 95)
 gen lgpolicy_uncertainty_wins = log(policy_uncertainty_wins)
 gen lgrumor=log(rumor_wins)
 drop if missing(rumor)
+drop _m*
 
 label var lgpolicy_uncertainty_wins "Policy Uncertainty"
 label var rumor "Rumor"
@@ -72,6 +76,8 @@ eststo clear
 forvalues i = 1/4{
   eststo: reg l`i'.lgrumor lgpolicy_uncertainty_wins if year > 2006 & year < 2016
   eststo: reg l`i'.rumor lgpolicy_uncertainty_wins if year > 2006 & year < 2016
+  eststo: tobit l`i'.rumor lgpolicy_uncertainty_wins if year > 2006 & year < 2016, ll(0)
+
 }
 esttab using results/macro_q.rtf, label replace
 //esttab using results/macro_q.xls, label replace
@@ -81,6 +87,8 @@ save statadata/03_macro_q_reg.dta, replace
 use statadata/formerge_m.dta, clear
 merge m:1 year month using statadata/02_macro.dta, gen(_mmacro)
 keep if _mmacro == 3
+rename NO rumor
+rename ChinaNewsBasedEPU policy_uncertainty
 
 local keyvalue stkcd year month
 merge m:1  `keyvalue' using statadata/01_rumor_mf.dta, gen(_mrumor)
@@ -109,9 +117,15 @@ tsset id idmonth
 eststo clear
 local CV_wins lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins SA 
 eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, absorb(id year) cluster(id)
+eststo: probit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
+*0 和 3 之间的差距显著为负
+eststo: mlogit rumor lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
+
 eststo: logit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
+eststo: probit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
 eststo: tobit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id) ll(0)
 eststo: tobit l1.rumor lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id) ll(0)
+
 esttab using results/macro_mf.rtf, label replace
 save "statadata/03_macro_reg_mf.dta", replace 
 
@@ -122,6 +136,8 @@ keep if _mmacro == 3
 local keyvalue stkcd year quarter
 merge m:1  `keyvalue' using statadata/01_rumor_qf.dta, gen(_mrumor)
 merge 1:1  `keyvalue' using statadata/05_cv_q.dta, gen(_mcv)
+rename NO rumor
+rename ChinaNewsBasedEPU policy_uncertainty
 replace rumor = 0 if missing(rumor)
 recode rumor (0 = 0) (else = 1), gen(rumor_dum)
 drop _m*
@@ -140,10 +156,15 @@ egen id = group(stkcd)
 egen idind = group(indcd)
 tsset id idquarter
 local CV_wins lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins SA
+
 eststo clear
 eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, absorb(id year) cluster(id)
+eststo: probit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
+eststo: mlogit rumor lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
 eststo: logit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
-// eststo: mlogit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
+eststo: probit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
+eststo: tobit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id) ll(0)
+eststo: tobit l1.rumor lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id) ll(0)
 esttab using results/macro_qf.rtf, replace
 eststo clear
 save "statadata/03_macro_reg_qf.dta", replace

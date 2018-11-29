@@ -1,10 +1,4 @@
-/**
- * This code is used to regress firm-level regressions
- * Author: Frank Zheng
- * Required data: -
- * Required code: -
- * Required ssc : -
- */
+/* 公司层面回归 */
 
 //TODO 将collapse的过程全部当作tempfile过程
 // setups
@@ -26,6 +20,7 @@ merge 1:1 `keyvalue' using statadata/05_cv_y.dta, gen(_mcv)
 merge 1:1 `keyvalue' using statadata/kz_index.dta, gen(_mkz)
 sort stkcd year 
 drop _m* id accper
+rename NO rumor
 
 //replace vio_count = 0 if missing(vio_count)
 replace rumor = 0 if missing(rumor)
@@ -39,23 +34,31 @@ label var rumor_dum "Rumor_dum"
 label var tobinq "TobinQ"
 egen id = group(stkcd)
 tsset id year
-
+*********都是显著的！
 eststo clear
 local CV lnasset tobinq rdspendsumratio lev SA
 eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(year) cluster(id)
 eststo: logit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+eststo: tobit l1.rumor ROA_sd if inrange(year,2007,2015), ll(0)
+eststo: mlogit rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+*factor variables and time-series operators not allowed
+eststo: probit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+
 esttab using results/firm_y.rtf, replace
 save statadata/03_firm_ROA_reg.dta, replace
+//TODO ROA_sd换成其他的变量
 
-*2.1.2ROA回归（公司月）
+*2.1.2ROA回归（公司月） as robust
 use statadata/formerge_m.dta, clear
 local keyvalue stkcd year 
 merge 1:1 `keyvalue' month using statadata/01_rumor_mf.dta, gen(_mrumor)
 merge m:1 `keyvalue' using statadata/02_firm_ROA.dta, gen(_mroa)
 merge 1:1 `keyvalue' month using statadata/05_cv_m.dta, gen(_mcv)
 //merge 1:1 `keyvalue' month using statadata/02_firm_turnover_mf.dta, gen(_mturnover)
+rename NO rumor
 
-drop _m* id accper enddate
+drop _m* id accper
 //rename edca count_turnover
 //replace count_turnover = 0 if missing(count_turnover)
 //replace vio_count = 0 if missing(vio_count)
@@ -76,17 +79,22 @@ tsset id idmonth
 eststo clear 
 local CV lnasset tobinq rdspendsumratio lev SA
 eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(year) cluster(id)
 //eststo: reghdfe l1.rumor count_turnover `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
 eststo: logit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+eststo: probit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+eststo: tobit l1.rumor ROA_sd if inrange(year,2007,2015), ll(0)
+
 esttab using results/firm_mf.rtf, label replace
 save statadata/03_firm_ROA_mf_reg.dta, replace
 
-*2.1.3ROA回归（公司季度）
+*2.1.3ROA回归（公司季度） as robust
 use statadata/formerge_q.dta, clear
 local keyvalue stkcd year
 merge 1:1 `keyvalue' quarter using statadata/01_rumor_qf.dta, gen(_mrumor)
 merge m:1 `keyvalue' using statadata/02_firm_ROA.dta, gen(_mroa)
 merge 1:1 `keyvalue' quarter using statadata/05_cv_q.dta, gen(_mcv)
+rename NO rumor
 
 drop _m* id accper enddate
 //replace vio_count = 0 if missing(vio_count)
@@ -97,6 +105,10 @@ order rumor_dum, after(rumor)
 local winsorvar ROA_sd lnasset tobinq rdspendsumratio lev SA 
 winsor2 `winsorvar', replace cuts(5 95)
 
+label var rumor "Rumor"
+label var rumor_dum "Rumor_dum"
+label var tobinq "TobinQ"
+
 egen id = group(stkcd)
 egen idquarter = group(year quarter)
 egen idind = group(indcd)
@@ -105,7 +117,12 @@ tsset id idquarter
 eststo clear
 local CV lnasset tobinq rdspendsumratio lev SA 
 eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(year) cluster(id)
+
 eststo: logit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+eststo: probit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
+eststo: tobit l1.rumor ROA_sd `CV' if inrange(year,2007,2015), ll(0)
+
 esttab using results/firm_qf.rtf, label replace
 save statadata/03_firm_ROA_qf_reg.dta, replace
 
