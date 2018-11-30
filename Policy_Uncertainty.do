@@ -2,16 +2,6 @@
 // Gulen, Huseyin, and Mihai Ion, 2016, Policy Uncertainty and Corporate Investment,
 // The Review of Financial Studies 29, 523–564.
 
-/**
- * 
- * This code gennerate the main macro-level variable "policy uncertainty"
- * Author: Frank Zheng
- * Required data:China_Policy_Uncertainty_Data
- * Required code: -
- * Required ssc: estout 
- */
-
-
 // setups
 clear all
 set more off

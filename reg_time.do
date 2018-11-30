@@ -27,7 +27,7 @@ gen year = year(trddt)
 keep if inrange(year, 2007, 2015)
 gen rumor = cond(_mrumor == 1, 0, 1)
 xtset id iddate
-*���ӿ��Ʊ���
+
 reghdfe l1.rumor stds31 if inrange(year,2007,2015), absorb(id year) cluster(id)
 
 

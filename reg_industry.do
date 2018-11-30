@@ -1,19 +1,4 @@
-/**
- * This code is used to perform industry-level regressions
- * Author: Frank Zheng
- * Required data: 02_firm_asset.dta 02_firm_RD.dta 02_firm_TB.dta 02_firm_violation_main formerge_m.dta
- * Required code: too many
- * Required ssc : -
- */
-
- // install missing ssc
- local sscname estout winsor2 
- foreach pkg of local sscname{
-  cap which `pkg'
-  if _rc!=0{
-        ssc install `pkg'
-        }
- }
+/* 行业层面回归 */
 
 // setups
 clear all

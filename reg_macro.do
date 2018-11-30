@@ -87,12 +87,13 @@ save statadata/03_macro_q_reg.dta, replace
 use statadata/formerge_m.dta, clear
 merge m:1 year month using statadata/02_macro.dta, gen(_mmacro)
 keep if _mmacro == 3
-rename NO rumor
-rename ChinaNewsBasedEPU policy_uncertainty
+
 
 local keyvalue stkcd year month
 merge m:1  `keyvalue' using statadata/01_rumor_mf.dta, gen(_mrumor)
 merge 1:1  `keyvalue' using statadata/05_cv_m.dta, gen(_mcv)
+rename NO rumor
+rename ChinaNewsBasedEPU policy_uncertainty
 drop _m*
 //replace vio_count = 0 if missing(vio_count)
 replace rumor = 0 if missing(rumor)
@@ -185,3 +186,10 @@ log close macro_reg
  * Within Stata, reghdfe can be viewed as a generalization of areg/xtreg, 
  * with several additional features:
  */
+
+
+//TODO 
+/* Schwert（1989）的文章中使用包含时间固定效应的自回归模型对不同的宏观变量进行建模，并提取出残差项。
+将残差项的平方作为该变量的不确定性的度量。一般是使用工业生产指数的增长率的波动率作为宏观经济不确定性的度量。 */
+//TODO
+/* PSM配对 */
