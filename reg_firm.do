@@ -13,6 +13,7 @@ log using logs/firm_reg, name("firm_reg") text replace
 
 *2.1.1ROA回归（公司年）
 use statadata/formerge_y.dta, clear
+egen idind = group(indcd)
 local keyvalue stkcd year 
 merge 1:1 `keyvalue' using statadata/01_rumor_yf.dta, gen(_mrumor)
 merge 1:1 `keyvalue' using statadata/02_firm_ROA.dta, gen(_mroa)
@@ -38,6 +39,7 @@ tsset id year
 eststo clear
 local CV lnasset tobinq rdspendsumratio lev SA
 eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(year) cluster(id)
 eststo: logit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
 eststo: tobit l1.rumor ROA_sd if inrange(year,2007,2015), ll(0)
