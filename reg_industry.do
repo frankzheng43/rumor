@@ -26,6 +26,7 @@ merge m:1 `keyvalue' using `cv_yi', gen(_mcv)
 drop _m* stkcd 
 duplicates drop indcd year, force
 
+rename NO rumor
 rename rumor rumor_ind
 replace rumor_ind = 0 if missing(rumor_ind)
 recode rumor_ind (0 = 0) (else = 1), gen(rumor_ind_dum)
@@ -42,11 +43,13 @@ label var tobinq "TobinQ"
 
 egen idind = group(indcd)
 tsset idind year
-*/全部负向显著。。
+
 local CV lnasset tobinq rdspendsumratio lev SA
 eststo clear
 eststo: reghdfe l1.rumor_ind ROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
 eststo: logit l1.rumor_ind_dum ROA_ind_sd `CV' if inrange(year,2007,2015), cluster(idind)
+eststo: tobit l1.rumor_ind ROA_ind_sd  `CV' if inrange(year,2007,2015), ll(0)
+eststo: probit l1.rumor_ind ROA_ind_sd `CV' if inrange(year,2007,2015), cluster(idind)
 *esttab
 *eststo clear
 eststo: reghdfe l1.rumor_ind lgROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
@@ -54,14 +57,23 @@ eststo: reghdfe l1.lgrumor_ind lgROA_ind_sd `CV' if inrange(year,2007,2015), abs
 
 esttab using results/firm_yi.rtf, label replace
 save "statadata/03_industry_ROA_reg.dta", replace
-// TODO here
-//TO HERE
+
 *行业月
+use statadata/05_cv_m.dta, clear
+qui ds stkcd indcd year, not
+collapse (mean) `r(varlist)', by(indcd year)
+drop if missing(indcd)
+tempfile cv_mi
+save `cv_mi'
+
 use "statadata/formerge_im.dta", clear
+local keyvalue indcd year 
 merge m:1 indcd year using statadata/02_industry_ROA.dta, gen(_mroa)
 merge 1:1 indcd year month using "statadata/01_rumor_mi.dta", gen(_mrumor)
+merge m:1 `keyvalue' using `cv_mi', gen(_mcv)
 drop _m* 
 
+rename NO rumor
 rename rumor rumor_ind
 replace rumor_ind = 0 if missing(rumor_ind)
 recode rumor_ind (0 = 0) (else = 1), gen(rumor_ind_dum)
@@ -69,7 +81,24 @@ winsor ROA_ind_sd, gen(ROA_ind_sd_wins) p(0.05)
 gen lgrumor_ind = log(rumor_ind)
 gen lgROA_ind_sd = log(ROA_ind_sd)
 
-*/全部负向显著。。
+local winsorvar ROA_ind_sd lnasset tobinq rdspendsumratio lev SA
+winsor2 `winsorvar', replace cuts(5 95) 
+
+egen idind = group(indcd)
+egen idmonth = group(year month)
+tsset idind idmonth
+local CV lnasset tobinq rdspendsumratio lev SA
+eststo clear
+
+eststo: reghdfe l1.rumor_ind ROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
+eststo: logit l1.rumor_ind_dum ROA_ind_sd `CV' if inrange(year,2007,2015), cluster(idind)
+eststo: tobit l1.rumor_ind ROA_ind_sd  `CV' if inrange(year,2007,2015), ll(0)
+eststo: probit l1.rumor_ind ROA_ind_sd `CV' if inrange(year,2007,2015), cluster(idind)
+*esttab
+*eststo clear
+eststo: reghdfe l1.rumor_ind lgROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
+eststo: reghdfe l1.lgrumor_ind lgROA_ind_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(idind)
+
 reg lgrumor_ind lgROA_ind_sd if year > 2006 & year < 2016
 reg rumor_ind ROA_ind_sd if year > 2006 & year < 2016
 reg rumor_ind ROA_ind_sd_wins if year > 2006 & year < 2016
