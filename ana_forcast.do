@@ -36,3 +36,28 @@ foreach x of var `r(varlist)'{
 		rename `x'1 `x'
 		}
 	}
+
+save "F:\rumor\statadata\ana_forcast.dta"
+
+gen year = year(fenddt)
+label var year "年份"
+order year stkcd reportid rptdt
+
+/* 多个分析师共同撰写，仅取第一作者 */
+/* 需要重复多次 */
+replace ananmid = ustrregexrf(ananmid,", [0-9]*", "")
+replace ananmid = ustrregexrf(ananmid,", [0-9]*", "")
+replace ananmid = ustrregexrf(ananmid,", [0-9]*", "")
+replace ananmid = ustrregexrf(ananmid,", [0-9]*", "")
+replace ananmid = ustrregexrf(ananmid,", [0-9]*", "")
+
+/* 分析师代码没有，名字也没用，没救了 */
+drop if missing(ananmid)
+
+gsort  stkcd year -rptdt ananmid
+
+duplicates drop stkcd year ananmid, force
+
+rangestat (sd) feps (mean) feps, interval(year 0 0) by(stkcd)
+/* 分析师盈余预测分散程度 */
+gen dispersion_a = feps_sd/abs(feps_mean)
