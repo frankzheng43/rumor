@@ -1,6 +1,5 @@
 /* 公司层面回归 */
 
-//TODO 将collapse的过程全部当作tempfile过程
 // setups
 clear all
 set more off
@@ -49,10 +48,11 @@ eststo: probit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
 
 esttab using results/firm_y.rtf, replace
 save statadata/03_firm_ROA_reg.dta, replace
-//TODO ROA_sd换成其他的变量
 
 *2.1.2ROA回归（公司月） as robust
 use statadata/formerge_m.dta, clear
+egen idind = group(indcd)
+
 local keyvalue stkcd year 
 merge 1:1 `keyvalue' month using statadata/01_rumor_mf.dta, gen(_mrumor)
 merge m:1 `keyvalue' using statadata/02_firm_ROA.dta, gen(_mroa)
@@ -81,6 +81,7 @@ tsset id idmonth
 eststo clear 
 local CV lnasset tobinq rdspendsumratio lev SA
 eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(year) cluster(id)
 //eststo: reghdfe l1.rumor count_turnover `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
 eststo: logit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)

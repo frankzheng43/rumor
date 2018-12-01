@@ -60,7 +60,6 @@ save statadata/05_cv_m.dta, replace
 // merge m:1 `keyvalue' using `violation_y', gen (_mviolationq)
 // save statadata/05_cv_q.dta, replace
 
-// TODO: need cleaning
 use statadata/formerge_q.dta, clear
 local keyvalue stkcd year 
 merge m:1 `keyvalue' using `asset', gen(_masset)
