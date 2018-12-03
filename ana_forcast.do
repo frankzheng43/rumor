@@ -61,3 +61,8 @@ duplicates drop stkcd year ananmid, force
 rangestat (sd) feps (mean) feps, interval(year 0 0) by(stkcd)
 /* 分析师盈余预测分散程度 */
 gen dispersion_a = feps_sd/abs(feps_mean)
+
+/* 回归用分析师数据 */
+duplicates drop stkcd year, force
+keep stkcd year dispersion_a
+save "F:\rumor\statadata\ana_forecast_formerge.dta"
