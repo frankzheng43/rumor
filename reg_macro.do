@@ -131,6 +131,10 @@ esttab using results/macro_mf.rtf, label replace
 save "statadata/03_macro_reg_mf.dta", replace 
 
 /* 按公司-季度回归 */
+/* Gulen H, Ion M，. Policy Uncertainty and Corporate Investment[J]. 
+The Review of Financial Studies, 2016, 29(3): 523–564.
+季度回归，1-4期滞后
+ */
 use "statadata/formerge_q.dta", clear
 merge m:1 year quarter using "statadata/02_macro_q.dta", gen(_mmacro)
 keep if _mmacro == 3
