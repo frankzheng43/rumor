@@ -83,6 +83,7 @@ drop _m*
 drop if year < 2000
 // fill missing industry
 egen id =  group(stkcd)
+* 补全行业
 bysort  id : replace indcd = indcd[_n-1] if missing(indcd)
 bysort  id : replace indcd = indcd[_n+1] if missing(indcd)
 save statadata/05_cv_y.dta, replace
