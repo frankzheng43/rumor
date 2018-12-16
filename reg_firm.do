@@ -40,10 +40,10 @@ local CV lnasset tobinq rdspendsumratio lev SA
 eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
 eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 eststo: reghdfe l1.rumor ROA_sd `CV' if inrange(year,2007,2015), absorb(year) cluster(id)
+
 eststo: logit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
 eststo: tobit l1.rumor ROA_sd if inrange(year,2007,2015), ll(0)
 eststo: mlogit rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
-*factor variables and time-series operators not allowed
 eststo: probit l1.rumor_dum ROA_sd `CV' if inrange(year,2007,2015), cluster(id)
 
 esttab using results/firm_y.rtf, replace
