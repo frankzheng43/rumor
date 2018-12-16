@@ -130,11 +130,13 @@ eststo: tobit l1.rumor lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year
 esttab using results/macro_mf.rtf, label replace
 save "statadata/03_macro_reg_mf.dta", replace 
 
-/* 按公司-季度回归 */
+/* 主回归：按公司-季度回归 √ */ 
 /* Gulen H, Ion M，. Policy Uncertainty and Corporate Investment[J]. 
 The Review of Financial Studies, 2016, 29(3): 523–564.
 季度回归，1-4期滞后
  */
+//TODO 采用Gulen and lon（2016）年的权重方法，根据在每季度中各月的前后顺序，
+//对越靠后的月份赋值越高（1/6，1/3，1/2），作为稳健性检验。
 use "statadata/formerge_q.dta", clear
 merge m:1 year quarter using "statadata/02_macro_q.dta", gen(_mmacro)
 keep if _mmacro == 3
@@ -150,6 +152,7 @@ drop _m*
 local winsorvar policy_uncertainty lnasset tobinq rdspendsumratio lev SA
 winsor2 `winsorvar', suffix(_wins) cuts(5 95) 
 gen lgpolicy_uncertainty_wins = log( policy_uncertainty_wins)
+
 label var lgpolicy_uncertainty_wins "Policy Uncertainty"
 label var rumor "Rumor"
 label var rumor_dum "Rumor_dum"
@@ -160,16 +163,27 @@ egen idquarter = group(year quarter)
 egen id = group(stkcd)
 egen idind = group(indcd)
 tsset id idquarter
-local CV_wins lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins SA
 
+local CV_wins lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins SA
 eststo clear
-eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, absorb(id year) cluster(id)
-eststo: probit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
-eststo: mlogit rumor lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
-eststo: logit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
-eststo: probit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id)
-eststo: tobit l1.rumor_dum lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id) ll(0)
-eststo: tobit l1.rumor lgpolicy_uncertainty_wins `CV_wins' if year > 2006 & year < 2016, cluster(id) ll(0)
+eststo: reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(id year) cluster(id) //√
+eststo: reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) //√
+eststo: reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(year) cluster(id) //√
+
+eststo: logit l1.rumor_dum policy_uncertainty_wins `CV' if inrange(year,2007,2015), cluster(id)
+eststo: tobit l1.rumor_dum policy_uncertainty_wins if inrange(year,2007,2015), ll(0)
+eststo: mlogit rumor_dum policy_uncertainty_wins `CV' if inrange(year,2007,2015), cluster(id)
+eststo: probit l1.rumor_dum policy_uncertainty_wins `CV' if inrange(year,2007,2015), cluster(id)
+
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(year) cluster(id)
+*后三个是负的- -
+eststo: logit l1.rumor_dum lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), cluster(id)
+eststo: tobit l1.rumor_dum lgpolicy_uncertainty_wins if inrange(year,2007,2015), ll(0)
+eststo: mlogit rumor_dum lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), cluster(id)
+eststo: probit l1.rumor_dum lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), cluster(id)
+
 esttab using results/macro_qf.rtf, replace
 eststo clear
 save "statadata/03_macro_reg_qf.dta", replace
