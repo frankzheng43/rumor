@@ -31,3 +31,5 @@ winsor2 sales_std, cuts(1 99) label
 sort stkcd year
 
 save "F:\rumor\statadata\sale_std.dta"
+
+
