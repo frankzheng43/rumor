@@ -23,6 +23,7 @@ end
 
 str_to_numeric date_cla
 str_to_numeric date_rumor
+gen year = year(date_rumor)
 
 *全部的字符串变量都去掉空格
 quietly ds, has(type string)
