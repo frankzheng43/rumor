@@ -11,7 +11,7 @@ log using logs/sales_reg, name("sales_reg") text replace
 use statadata/formerge_y.dta, clear
 egen idind = group(indcd)
 local keyvalue stkcd year 
-merge 1:1 `keyvalue' using statadata\sale_std.dta, gen(_msale)
+merge 1:1 `keyvalue' using statadata/sale_std.dta, gen(_msale)
 merge 1:1 `keyvalue' using statadata/01_rumor_yf.dta, gen(_mrumor)
 merge 1:1 `keyvalue' using statadata/02_firm_ROA.dta, gen(_mroa)
 merge 1:1 `keyvalue' using statadata/05_cv_y.dta, gen(_mcv)
