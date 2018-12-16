@@ -38,11 +38,12 @@ local CV lnasset tobinq rdspendsumratio lev SA
 eststo: reghdfe l1.rumor dispersion_a `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
 eststo: reghdfe l1.rumor dispersion_a `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 eststo: reghdfe l1.rumor dispersion_a `CV' if inrange(year,2007,2015), absorb(year) cluster(id)
+
 eststo: logit l1.rumor_dum dispersion_a `CV' if inrange(year,2007,2015), cluster(id)
-eststo: tobit l1.rumor dispersion_a if inrange(year,2007,2015), ll(0)
-eststo: mlogit rumor_dum dispersion_a `CV' if inrange(year,2007,2015), cluster(id)
+eststo: tobit l1.rumor_dum dispersion_a if inrange(year,2007,2015), ll(0)
+*eststo: mlogit rumor_dum dispersion_a `CV' if inrange(year,2007,2015), cluster(id)
 *factor variables and time-series operators not allowed
 eststo: probit l1.rumor_dum dispersion_a `CV' if inrange(year,2007,2015), cluster(id)
 
-esttab using results/ana_y.rtf, replace
+esttab using results/ana_y.rtf, replace starlevels(* 0.10 ** 0.05 *** 0.01)
 save statadata/03_firm_ana_reg.dta, replace
