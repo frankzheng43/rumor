@@ -23,7 +23,10 @@ end
 
 str_to_numeric date_cla
 str_to_numeric date_rumor
+
 gen year = year(date_rumor)
+gen quarter = quarter(date_rumor)
+gen month = month(date_rumor)
 
 *全部的字符串变量都去掉空格
 quietly ds, has(type string)
@@ -58,4 +61,22 @@ foreach x of var `r(varlist)'{
     replace `x' = 0 if missing(`x')
 }
 
-save "F:\rumor\statadata\creditworth_nmiss_r.dta"
+* 生成 trustworthiness 的三个维度
+gen detail_score = time + target + number
+gen authority_score = expertise + analyst + fs + manager + worker + survey
+gen completeness_score = single + focus + background + stock
+
+
+save "F:\rumor\statadata\creditworth_nmiss_r.dta", replace
+
+collapse (mean) detail_score (mean) authority_score (mean) completeness_score, by(stkcd year)
+save "F:\rumor\statadata\score_y.dta", replace
+
+collapse (mean) detail_score (mean) authority_score (mean) completeness_score, by(stkcd year quarter)
+save "F:\rumor\statadata\score_q.dta", replace
+
+collapse (mean) detail_score (mean) authority_score (mean) completeness_score, by(stkcd year month)
+save "F:\rumor\statadata\score_m.dta", replace
+
+
+

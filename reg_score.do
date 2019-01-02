@@ -49,3 +49,43 @@ eststo: reghdfe completeness_score dispersion_a `CV' if inrange(year,2007,2015),
 eststo: reghdfe completeness_score ROA_sd `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 eststo: reghdfe completeness_score sales_std `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 
+tempvar median mean
+egen `median' = median(dispersion_a)
+egen `mean' = mean(dispersion_a)
+tempvar group_dispersion_a group_dispersion_a_mean
+gen `group_dispersion_a' = cond(dispersion_a > `median', 1, 0)
+gen `group_dispersion_a_mean' = cond(dispersion_a > `mean', 1, 0)
+ttest detail_score, by(`group_dispersion_a')
+ttest detail_score, by(`group_dispersion_a_mean')
+ttest authority_score, by(`group_dispersion_a')
+ttest authority_score, by(`group_dispersion_a_mean') 
+ttest completeness_score, by(`group_dispersion_a')
+ttest completeness_score, by(`group_dispersion_a_mean')
+
+
+tempvar median mean
+egen `median' = median(ROA_sd)
+egen `mean' = mean(ROA_sd)
+tempvar group_ROA_sd group_ROA_sd_mean
+gen `group_ROA_sd' = cond(ROA_sd > `median', 1, 0)
+gen `group_ROA_sd_mean' = cond(ROA_sd > `mean', 1, 0)
+ttest detail_score, by(`group_ROA_sd')
+ttest detail_score, by(`group_ROA_sd_mean')
+ttest authority_score, by(`group_ROA_sd')
+ttest authority_score, by(`group_ROA_sd_mean') 
+ttest completeness_score, by(`group_ROA_sd')
+ttest completeness_score, by(`group_ROA_sd_mean')
+
+tempvar median mean
+egen `median' = median(sales_std)
+egen `mean' = mean(sales_std)
+tempvar group_sales_std group_sales_std_mean
+gen `group_sales_std' = cond(sales_std > `median', 1, 0)
+gen `group_sales_std_mean' = cond(sales_std > `mean', 1, 0)
+ttest detail_score, by(`group_sales_std')
+ttest detail_score, by(`group_sales_std_mean')
+ttest authority_score, by(`group_sales_std')
+ttest authority_score, by(`group_sales_std_mean') 
+ttest completeness_score, by(`group_sales_std')
+ttest completeness_score, by(`group_sales_std_mean')
+

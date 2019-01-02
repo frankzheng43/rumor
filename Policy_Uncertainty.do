@@ -23,8 +23,25 @@ save "statadata\02_macro.dta", replace
 
 // collapse into quarterly data 
 use "statadata\02_macro.dta", clear
-collapse (mean) policy_uncertainty, by(year quarter)
+collapse (mean) ChinaNewsBasedEPU, by(year quarter)
 save "statadata\02_macro_q.dta", replace
+
+* 按照不同的权重加权
+gen div = 6
+egen seq = fill(1/3 1/3)
+gen weight = seq/div
+drop seq div
+
+collapse (mean) ChinaNewsBasedEPU [iweight = weight], by(year quarter)
+rename ChinaNewsBasedEPU ChinaNewsBasedEPU_w
+merge 1:1 year quarter using F:\rumor\statadata\02_macro_q.dta
+drop _m*
+save "statadata\02_macro_q_w.dta", replace
+
+
+egen idquarter = group(year quarter)
+tsset idquarter
+twoway line ChinaNewsBasedEPU ChinaNewsBasedEPU_w idquarter
 
 log close 
 
