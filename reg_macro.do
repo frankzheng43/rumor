@@ -138,20 +138,22 @@ The Review of Financial Studies, 2016, 29(3): 523–564.
 //TODO 采用Gulen and lon（2016）年的权重方法，根据在每季度中各月的前后顺序，
 //对越靠后的月份赋值越高（1/6，1/3，1/2），作为稳健性检验。
 use "statadata/formerge_q.dta", clear
-merge m:1 year quarter using "statadata/02_macro_q.dta", gen(_mmacro)
+merge m:1 year quarter using "statadata/02_macro_q_w.dta", gen(_mmacro)
 keep if _mmacro == 3
 local keyvalue stkcd year quarter
 merge m:1  `keyvalue' using statadata/01_rumor_qf.dta, gen(_mrumor)
 merge 1:1  `keyvalue' using statadata/05_cv_q.dta, gen(_mcv)
 rename NO rumor
 rename ChinaNewsBasedEPU policy_uncertainty
+rename ChinaNewsBasedEPU_w policy_uncertainty_w
 replace rumor = 0 if missing(rumor)
 recode rumor (0 = 0) (else = 1), gen(rumor_dum)
 drop _m*
 
-local winsorvar policy_uncertainty lnasset tobinq rdspendsumratio lev SA
+local winsorvar policy_uncertainty policy_uncertainty_w lnasset tobinq rdspendsumratio lev SA
 winsor2 `winsorvar', suffix(_wins) cuts(5 95) 
-gen lgpolicy_uncertainty_wins = log( policy_uncertainty_wins)
+gen lgpolicy_uncertainty_wins = log(policy_uncertainty_wins)
+gen lgpolicy_uncertainty_w_wins = log(policy_uncertainty_w_wins)
 
 label var lgpolicy_uncertainty_wins "Policy Uncertainty"
 label var rumor "Rumor"
@@ -164,8 +166,31 @@ egen id = group(stkcd)
 egen idind = group(indcd)
 tsset id idquarter
 
-local CV_wins lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins SA
+local CV lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins SA_wins
 eststo clear
+*正式
+eststo clear
+eststo: reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l2.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l1.rumor policy_uncertainty_w_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l2.rumor policy_uncertainty_w_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+esttab using results/macro_季度加权滞后.rtf, replace starlevels(* 0.10 ** 0.05 *** 0.01)
+*正式
+eststo clear
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l2.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_w_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l2.rumor lgpolicy_uncertainty_w_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+esttab using results/macro_季度加权滞后对数.rtf, replace starlevels(* 0.10 ** 0.05 *** 0.01)
+*正式
+eststo clear
+eststo: reghdfe l1.rumor policy_uncertainty_wins lnasset_wins tobinq_wins lev_wins SA_wins if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l2.rumor policy_uncertainty_wins lnasset_wins tobinq_wins lev_wins SA_wins if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l1.rumor policy_uncertainty_w_wins lnasset_wins tobinq_wins lev_wins SA_wins if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l2.rumor policy_uncertainty_w_wins lnasset_wins tobinq_wins lev_wins SA_wins if inrange(year,2007,2015), absorb(idind year) cluster(id)
+esttab using results/macro_季度加权滞后无RD.rtf, replace starlevels(* 0.10 ** 0.05 *** 0.01)
+
+
 eststo: reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(id year) cluster(id) //√
 eststo: reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) //√
 eststo: reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(year) cluster(id) //√
@@ -213,3 +238,10 @@ log close macro_reg
 /* 交易量 */
 //TODO
 /* PSM配对 */
+
+
+
+estpost summarize rumor policy_uncertainty_wins policy_uncertainty_w_wins lnasset_wins tobinq_wins lev_wins SA_wins lgpolicy_uncertainty_wins lgpolicy_uncertainty_w_wins
+esttab using miaoshu.rtf, cells("count mean sd min max")
+
+logout, save(BDD回归描述性统计) word replace:summarize rumor policy_uncertainty_wins policy_uncertainty_w_wins lnasset_wins tobinq_wins lev_wins SA_wins lgpolicy_uncertainty_wins lgpolicy_uncertainty_w_wins

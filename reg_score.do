@@ -32,7 +32,8 @@ winsor2 `winsorvar', replace cuts(5 95)
 tsset id year
 
 eststo clear
-local CV lnasset tobinq rdspendsumratio lev SA
+local CV lnasset tobinq  lev SA
+*local CV lnasset tobinq rdspendsumratio lev SA
 
 eststo: reghdfe detail_score dispersion_a ROA_sd sales_std `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 eststo: reghdfe detail_score dispersion_a `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
@@ -61,7 +62,6 @@ ttest authority_score, by(`group_dispersion_a')
 ttest authority_score, by(`group_dispersion_a_mean') 
 ttest completeness_score, by(`group_dispersion_a')
 ttest completeness_score, by(`group_dispersion_a_mean')
-
 
 tempvar median mean
 egen `median' = median(ROA_sd)
