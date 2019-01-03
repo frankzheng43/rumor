@@ -166,7 +166,8 @@ egen id = group(stkcd)
 egen idind = group(indcd)
 tsset id idquarter
 
-local CV lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins SA_wins
+local CV lnasset_wins tobinq_wins lev_wins SA_wins
+* local CV lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins SA_wins
 eststo clear
 *正式
 eststo clear
@@ -212,6 +213,22 @@ eststo: probit l1.rumor_dum lgpolicy_uncertainty_wins `CV' if inrange(year,2007,
 esttab using results/macro_qf.rtf, replace
 eststo clear
 save "statadata/03_macro_reg_qf.dta", replace
+
+
+*分组检验 DA
+tempvar median mean
+egen `median' = median(abs_DA_Winsor)
+egen `mean' = mean(abs_DA_Winsor)
+tempvar group_abs_DA_Winsor group_abs_DA_Winsor_mean
+gen group_abs_DA_Winsor = cond(abs_DA_Winsor > `median', 1, 0)
+gen group_abs_DA_Winsor_mean = cond(abs_DA_Winsor > `mean', 1, 0)
+
+* DA大于中位数，不显著；小于中位数，显著
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_abs_DA_Winsor == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_abs_DA_Winsor == 1, absorb(idind year) cluster(id) 
+
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_abs_DA_Winsor_mean == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_abs_DA_Winsor_mean == 1, absorb(idind year) cluster(id) 
 
 log close macro_reg
 // eststo: xtreg l1.rumor lgpolicy_uncertainty_wins lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins  i.year if year > 2006 & year < 2016, fe cluster(id)
