@@ -32,15 +32,15 @@ tsset id idquarter
 
 eststo clear
 local CV lnasset tobinq  lev SA
+*√
+eststo: reghdfe l1.detail_score policy_uncertainty `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+eststo: reghdfe l1.detail_score policy_uncertainty_w `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 
-eststo: reghdfe detail_score policy_uncertainty `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
-eststo: reghdfe detail_score policy_uncertainty_w `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+eststo: reghdfe l1.authority_score policy_uncertainty `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+eststo: reghdfe l1.authority_score policy_uncertainty_w `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 
-eststo: reghdfe authority_score policy_uncertainty `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
-eststo: reghdfe authority_score policy_uncertainty_w `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
-
-eststo: reghdfe completeness_score policy_uncertainty `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
-eststo: reghdfe completeness_score policy_uncertainty_w `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+eststo: reghdfe l1.completeness_score policy_uncertainty `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+eststo: reghdfe l1.completeness_score policy_uncertainty_w `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 
 tempvar median mean
 egen `median' = median(policy_uncertainty)
