@@ -55,5 +55,7 @@ order stkcd year seperation
 sort stkcd year
 
 *两权分离度小于0，不科学。而且数字极小，直接当作0
-replace seperation = 0 if seperation <0
-winsor2 seperation, suffix(_wins) cuts(5 95)
+replace seperation = 0 if seperation < 0
+winsor2 seperation, suffix(_wins) cuts(1 99)
+winsor2 seperation, suffix(_wins1) cuts(5 95)
+save "F:\rumor\statadata\seperation.dta"
