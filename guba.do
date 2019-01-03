@@ -53,7 +53,7 @@ twoway line Readnum idquarter
 
 merge 1:1 year quarter using F:\rumor\statadata\02_macro_q_w.dta
 twoway (line l1.Readnum idquarter, yaxis(1)) (line ChinaNewsBasedEPU_w idquarter, yaxis(2))
-gen lgChinaNewsBasedEPU = log( ChinaNewsBasedEPU)
+gen lgChinaNewsBasedEPU = log(ChinaNewsBasedEPU)
 gen lgReadnum = log(Readnum)
 
 reg l1.Readnum ChinaNewsBasedEPU
