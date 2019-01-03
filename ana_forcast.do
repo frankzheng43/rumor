@@ -37,7 +37,7 @@ foreach x of var `r(varlist)'{
 		}
 	}
 
-save "F:\rumor\statadata\ana_forcast.dta"
+save "F:\rumor\statadata\ana_forcast.dta", replace
 
 gen year = year(fenddt)
 label var year "年份"
