@@ -1,4 +1,4 @@
-local files: dir "F:\rumor\raw\guba" files "*.xlsx"
+local files: dir "F:/rumor/raw/guba" files "*.xlsx"
 dis `files'
 foreach i in `files'{
     clear
@@ -52,7 +52,7 @@ collapse (mean) Tpostnum (mean) Pospostnum (mean) Negpostnum (mean) Neupostnum (
 twoway line Readnum idquarter
 
 merge 1:1 year quarter using F:\rumor\statadata\02_macro_q_w.dta
-twoway (line Readnum idquarter, yaxis(1)) (line ChinaNewsBasedEPU_w idquarter, yaxis(2))
+twoway (line l1.Readnum idquarter, yaxis(1)) (line ChinaNewsBasedEPU_w idquarter, yaxis(2))
 gen lgChinaNewsBasedEPU = log( ChinaNewsBasedEPU)
 gen lgReadnum = log(Readnum)
 
