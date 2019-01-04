@@ -1,5 +1,4 @@
-* 新的两权分离度
-
+* 两权分离度
 clear all
 set more off
 eststo clear
@@ -12,14 +11,6 @@ log using logs/seperation, name("seperation") text replace
 import delimited raw/EN_EquityNatureAll.txt, encoding(UTF-8) varnames(1) stringcols(_all) clear
 
 rename symbol stkcd
-
-quietly ds, has(type string)
-foreach x of var `r(varlist)'{
-	gen `x'1 = strltrim(`x')
-	order `x'1, after(`x')
-	drop `x'
-	rename `x'1 `x'
-}
 
 format stkcd %6s
 
