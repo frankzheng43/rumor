@@ -215,15 +215,18 @@ eststo clear
 save "statadata/03_macro_reg_qf.dta", replace
 
 
-*分组检验 DA
+*分组检验 DA => DA越小，传闻越多
+merge m:1 stkcd year using F:\rumor\statadata\DA_d.dta
+
 tempvar median mean
 bysort year: egen `median' = median(abs_DA_Winsor)
 bysort year: egen `mean' = mean(abs_DA_Winsor)
 tempvar group_abs_DA_Winsor group_abs_DA_Winsor_mean
 gen group_abs_DA_Winsor = cond(abs_DA_Winsor > `median', 1, 0)
 gen group_abs_DA_Winsor_mean = cond(abs_DA_Winsor > `mean', 1, 0)
+replace group_abs_DA_Winsor = . if missing(abs_DA_Winsor)
+replace group_abs_DA_Winsor_mean = . if missing(abs_DA_Winsor)
 
-* DA大于中位数，不显著；小于中位数，显著
 sort id idquarter
 reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_abs_DA_Winsor == 0, absorb(idind year) cluster(id) 
 reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_abs_DA_Winsor == 1, absorb(idind year) cluster(id) 
@@ -233,15 +236,18 @@ reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  grou
 
 reghdfe l1.rumor c.policy_uncertainty_wins#i.group_abs_DA_Winsor `CV' if inrange(year,2007,2015) , absorb(idind year) cluster(id)
 
-* 分组检验 分析师跟踪
+* 分组检验 分析师跟踪 => 跟踪数越多，传闻越多
 merge m:1 stkcd year using F:\rumor\statadata\ana_follow.dta
 
+* 分析师平均研报
 tempvar median mean
 bysort year: egen `median' = median(analyst_follow)
 bysort year: egen `mean' = mean(analyst_follow)
 tempvar group_analyst_follow group_analyst_follow_mean
 gen group_analyst_follow = cond(analyst_follow > `median', 1, 0)
 gen group_analyst_follow_mean = cond(analyst_follow > `mean', 1, 0)
+replace group_analyst_follow = . if missing(analyst_follow)
+replace group_analyst_follow_mean = . if missing(analyst_follow)
 
 sort id idquarter
 reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_analyst_follow == 0, absorb(idind year) cluster(id) 
@@ -250,7 +256,133 @@ reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  grou
 reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_analyst_follow_mean == 0, absorb(idind year) cluster(id) 
 reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_analyst_follow_mean == 1, absorb(idind year) cluster(id) 
 
-* 分组检验 两权分离度
+* 研报数
+tempvar median mean
+bysort year: egen `mean' = mean(numforecast)
+bysort year: egen `median' = median(numforecast)
+tempvar group_numforecast group_numforecast_mean
+gen group_numforecast = cond(numforecast > `median', 1, 0)
+gen group_numforecast_mean = cond(numforecast > `mean', 1, 0)
+replace group_numforecast = . if missing(numforecast)
+replace group_numforecast_mean = . if missing(numforecast)
+
+sort id idquarter
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_numforecast == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_numforecast == 1, absorb(idind year) cluster(id) 
+
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_numforecast_mean == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_numforecast_mean == 1, absorb(idind year) cluster(id) 
+
+* 分析师数
+tempvar median mean
+bysort year: egen `mean' = mean(numanalyst)
+bysort year: egen `median' = median(numanalyst)
+tempvar group_numanalyst group_numanalyst_mean
+gen group_numanalyst = cond(numanalyst > `median', 1, 0)
+gen group_numanalyst_mean = cond(numanalyst > `mean', 1, 0)
+replace group_numanalyst = . if missing(numanalyst)
+replace group_numanalyst_mean = . if missing(numanalyst)
+
+sort id idquarter
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_numanalyst == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_numanalyst == 1, absorb(idind year) cluster(id) 
+
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_numanalyst_mean == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_numanalyst_mean == 1, absorb(idind year) cluster(id) 
+
+
+* 分组检验 两权分离度 => 两权分离度越高，传闻越多 √
+merge m:1 stkcd year using F:\rumor\statadata\seperation.dta
+
+tempvar median mean
+bysort year: egen `median' = median(seperation)
+bysort year: egen `mean' = mean(seperation)
+tempvar group_seperation group_seperation_mean
+gen group_seperation = cond(seperation > `median', 1, 0)
+gen group_seperation_mean = cond(seperation > `mean', 1, 0)
+replace group_seperation = . if missing(seperation)
+replace group_seperation_mean = . if missing(seperation)
+
+sort id idquarter
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation == 1, absorb(idind year) cluster(id) 
+
+tempvar median mean
+bysort year: egen `median' = median(seperation_wins)
+bysort year: egen `mean' = mean(seperation_wins)
+tempvar group_seperation_wins group_seperation__wins_mean
+gen group_seperation_wins = cond(seperation_wins > `median', 1, 0)
+gen group_seperation_wins_mean = cond(seperation_wins > `mean', 1, 0)
+replace group_seperation_wins = . if missing(seperation_wins)
+replace group_seperation_wins_mean = . if missing(seperation_wins)
+
+sort id idquarter
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation_wins == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation_wins == 1, absorb(idind year) cluster(id) 
+
+* 分组检验 机构投资者持股比例 => 中位数分组，持股比例越多的传闻越多 均值分组，两组均显著
+merge m:1 stkcd year using F:\rumor\statadata\ins_share.dta
+* 未winsor
+tempvar median mean
+bysort year: egen `median' = median(ins_share)
+bysort year: egen `mean' = mean(ins_share)
+tempvar group_ins_share group_ins_share_mean
+gen group_ins_share = cond(ins_share > `median', 1, 0)
+gen group_ins_share_mean = cond(ins_share > `mean', 1, 0)
+replace group_ins_share = . if missing(ins_share)
+replace group_ins_share_mean = . if missing(ins_share)
+
+sort id idquarter
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share == 1, absorb(idind year) cluster(id) 
+
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share_mean == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share_mean == 1, absorb(idind year) cluster(id) 
+* winsor
+tempvar median mean
+bysort year: egen `median' = median(ins_share_wins)
+bysort year: egen `mean' = mean(ins_share_wins)
+tempvar group_ins_share_wins group_ins_share_wins_mean
+gen group_ins_share_wins = cond(ins_share_wins > `median', 1, 0)
+gen group_ins_share_wins_mean = cond(ins_share_wins > `mean', 1, 0)
+replace group_ins_share_wins = . if missing(ins_share_wins)
+replace group_ins_share_wins_mean = . if missing(ins_share_wins)
+
+sort id idquarter
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share_wins == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share_wins == 1, absorb(idind year) cluster(id) 
+
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share_wins_mean == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share_wins_mean == 1, absorb(idind year) cluster(id) 
+
+* winsor1
+tempvar median mean
+bysort year: egen `median' = median(ins_share_wins1)
+bysort year: egen `mean' = mean(ins_share_wins1)
+tempvar group_ins_share_wins1 group_ins_share_wins1_mean
+gen group_ins_share_wins1 = cond(ins_share_wins1 > `median', 1, 0)
+gen group_ins_share_wins1_mean = cond(ins_share_wins1 > `mean', 1, 0)
+replace group_ins_share_wins1 = . if missing(ins_share_wins1)
+replace group_ins_share_wins1_mean = . if missing(ins_share_wins1)
+
+sort id idquarter
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share_wins1 == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share_wins1 == 1, absorb(idind year) cluster(id) 
+
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share_wins1_mean == 0, absorb(idind year) cluster(id) 
+reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share_wins1_mean == 1, absorb(idind year) cluster(id) 
+
+
+* 股吧帖子与不确定性 => 不确定性增加时，贴子数增加（传播信息的意愿增强），阅读数增加（搜寻信息的意愿增强）
+drop if inlist(substr(stkcd,1,1),"2","3","9")
+local CV lnasset_wins tobinq_wins lev_wins SA_wins
+
+sort id idquarter
+reghdfe l1.Commentnum policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+reghdfe l1.Tpostnum policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+reghdfe l1.Readnum policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+
+
 
 log close macro_reg
 // eststo: xtreg l1.rumor lgpolicy_uncertainty_wins lnasset_wins tobinq_wins rdspendsumratio_wins lev_wins  i.year if year > 2006 & year < 2016, fe cluster(id)
