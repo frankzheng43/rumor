@@ -11,8 +11,8 @@ foreach i in `files'{
     append using "F:/rumor/raw/guba/`i'.dta"
 }
 
-duplicates drop Scode Date Tpostnum Pospostnum Negpostnum Neupostnum Readnum Commentnum , force
-
+duplicates drop _all , force
+rename Scode stkcd
 /** This program is used to convert string date to numeric date*/
 capture program drop str_to_numeric
 program str_to_numeric
@@ -46,9 +46,10 @@ egen idquarter = group(year quarter)
 
 save "F:\rumor\statadata\guba.dta"
 
+collapse (mean) Tpostnum (mean) Pospostnum (mean) Negpostnum (mean) Neupostnum (mean) Readnum (mean) Commentnum, by (stkcd year quarter)
+save "F:\rumor\statadata\guba_qm.dta"
 
-
-collapse (mean) Tpostnum (mean) Pospostnum (mean) Negpostnum (mean) Neupostnum (mean) Readnum (mean) Commentnum, by (year quarter)
+collapse (mean) Tpostnum (mean) Pospostnum (mean) Negpostnum (mean) Neupostnum (mean) Readnum (mean) Commentnum, by (stkcd year quarter)
 twoway line Readnum idquarter
 
 merge 1:1 year quarter using F:\rumor\statadata\02_macro_q_w.dta
