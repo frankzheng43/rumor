@@ -204,7 +204,7 @@ eststo: probit l1.rumor_dum policy_uncertainty_wins `CV' if inrange(year,2007,20
 eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(id year) cluster(id)
 eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(year) cluster(id)
-*后三个是负的- -
+
 eststo: logit l1.rumor_dum lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), cluster(id)
 eststo: tobit l1.rumor_dum lgpolicy_uncertainty_wins if inrange(year,2007,2015), ll(0)
 eststo: mlogit rumor_dum lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), cluster(id)
@@ -214,6 +214,43 @@ esttab using results/macro_qf.rtf, replace
 eststo clear
 save "statadata/03_macro_reg_qf.dta", replace
 
+* 可信度分数与BBD指数的回归
+eststo clear
+sort id idquarter
+eststo: reghdfe l1.detail_score policy_uncertainty `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+eststo: reghdfe l1.detail_score policy_uncertainty_w `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+
+eststo: reghdfe l1.authority_score policy_uncertainty `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+eststo: reghdfe l1.authority_score policy_uncertainty_w `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+
+eststo: reghdfe l1.completeness_score policy_uncertainty `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+eststo: reghdfe l1.completeness_score policy_uncertainty_w `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
+esttab using results/可信度与BBD.rtf, replace starlevels(* 0.10 ** 0.05 *** 0.01)
+
+* 可信度的t检验
+tempvar median mean
+egen `median' = median(policy_uncertainty)
+egen `mean' = mean(policy_uncertainty)
+tempvar group_policy_uncertainty group_policy_uncertainty_mean
+gen `group_policy_uncertainty' = cond(policy_uncertainty > `median', 1, 0)
+gen `group_policy_uncertainty_mean' = cond(policy_uncertainty > `mean', 1, 0)
+* detail显著
+ttest detail_score, by(`group_policy_uncertainty') 
+ttest detail_score, by(`group_policy_uncertainty_mean')
+ttest authority_score, by(`group_policy_uncertainty')
+ttest authority_score, by(`group_policy_uncertainty_mean') 
+ttest completeness_score, by(`group_policy_uncertainty')
+ttest completeness_score, by(`group_policy_uncertainty_mean')
+
+recode authority_score (0=0)(else = 1), gen(authority_score_dum)
+recode detail_score (0=0)(else = 1), gen(detail_score_dum)
+recode completeness_score (0=0)(else = 1), gen(completeness_score_dum)
+
+reg authority_score_dum policy_uncertainty if !missing(authority_score)
+reg detail_score_dum policy_uncertainty if !missing(detail_score)
+reg completeness_score_dum policy_uncertainty if !missing(completeness_score_dum)
+
+logit authority_score_dum policy_uncertainty if !missing(authority_score)
 
 *分组检验 DA => DA越小，传闻越多
 merge m:1 stkcd year using F:\rumor\statadata\DA_d.dta
@@ -303,9 +340,16 @@ gen group_seperation_mean = cond(seperation > `mean', 1, 0)
 replace group_seperation = . if missing(seperation)
 replace group_seperation_mean = . if missing(seperation)
 
+local CV lnasset_wins tobinq_wins lev_wins SA_wins
+eststo clear
 sort id idquarter
-reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation == 0, absorb(idind year) cluster(id) 
-reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation == 1, absorb(idind year) cluster(id) 
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation == 0, absorb(idind year) cluster(id) 
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation == 1, absorb(idind year) cluster(id) 
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation_mean == 0, absorb(idind year) cluster(id) 
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation_mean == 1, absorb(idind year) cluster(id) 
+esttab using results/按两权分离度分组.rtf, replace starlevels(* 0.10 ** 0.05 *** 0.01)
+
 
 tempvar median mean
 bysort year: egen `median' = median(seperation_wins)
@@ -372,15 +416,38 @@ reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  grou
 reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share_wins1_mean == 0, absorb(idind year) cluster(id) 
 reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_ins_share_wins1_mean == 1, absorb(idind year) cluster(id) 
 
+*分年份
+local CV lnasset_wins tobinq_wins lev_wins SA_wins
+eststo clear
+sort id idquarter
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation == 0, absorb(idind year) cluster(id) 
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation == 1, absorb(idind year) cluster(id) 
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation_mean == 0, absorb(idind year) cluster(id) 
+eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_seperation_mean == 1, absorb(idind year) cluster(id) 
+esttab using results/按两权分离度分组.rtf, replace starlevels(* 0.10 ** 0.05 *** 0.01)
+
 
 * 股吧帖子与不确定性 => 不确定性增加时，贴子数增加（传播信息的意愿增强），阅读数增加（搜寻信息的意愿增强）
 drop if inlist(substr(stkcd,1,1),"2","3","9")
-local CV lnasset_wins tobinq_wins lev_wins SA_wins
+local winsorvar Tpostnum Readnum
+winsor2 `winsorvar', suffix(_wins) cuts(5 95) 
+winsor2 `winsorvar', suffix(_wins1) cuts(1 99) 
+gen lgReadnum = log(Readnum)
+gen lgTpostnum = log(Tpostnum)
+gen lgReadnum_wins = log(Readnum_wins)
+gen lgTpostnum_wins = log(Tpostnum_wins)
 
+
+local CV lnasset_wins tobinq_wins lev_wins SA_wins
+eststo clear
 sort id idquarter
-reghdfe l1.Commentnum policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
-reghdfe l1.Tpostnum policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
-reghdfe l1.Readnum policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+*eststo: reghdfe l1.Commentnum lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l1.Tpostnum_wins lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+eststo: reghdfe l1.Readnum_wins lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+* eststo: reghdfe Tpostnum lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+* eststo: reghdfe Readnum lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
+esttab using results/股吧帖子.rtf, replace starlevels(* 0.10 ** 0.05 *** 0.01)
 
 
 
