@@ -13,3 +13,9 @@ egen idquarter = group(year quarter)
 tsset idquarter
 twoway line ChinaNewsBasedEPU ChinaNewsBasedEPU_w NO idquarter
 twoway line ChinaNewsBasedEPU  NO idquarter
+
+
+
+* 变量的描述性统计
+asdoc sum rumor detail_score authority_score completeness_score policy_uncertainty_wins policy_uncertainty_w_wins lnasset_wins tobinq_wins lev_wins SA_wins, stat(N mean sd min p25 p50 p75 max) save(描述性统计11.doc)
+logout, save("相关性") excel replace:pwcorr_a rumor detail_score authority_score completeness_score policy_uncertainty_wins lnasset_wins tobinq_wins lev_wins SA_wins

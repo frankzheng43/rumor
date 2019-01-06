@@ -44,3 +44,4 @@ rename ROA ROA_ind
 *计算前三年的行业波动率
 rangestat (sd) ROA_ind, interval(year -3 -1) by(indcd)
 save statadata/02_industry_ROA.dta, replace
+
