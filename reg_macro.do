@@ -217,6 +217,7 @@ save "statadata/03_macro_reg_qf.dta", replace
 * 可信度分数与BBD指数的回归
 eststo clear
 sort id idquarter
+local CV lnasset_wins tobinq_wins lev_wins SA_wins
 eststo: reghdfe l1.detail_score policy_uncertainty `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 eststo: reghdfe l1.detail_score policy_uncertainty_w `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 
