@@ -65,3 +65,7 @@ scatter  lgavelength policy_uncertainty
 * 不控制年份的话显著
 reg l1.avelength_wins policy_uncertainty_w_wins lnasset_wins tobinq_wins lev_wins SA_wins i.idind
 
+* 平均不确定性词汇个数不显著
+reg l1.aveuncer_wins policy_uncertainty_w_wins lnasset_wins tobinq_wins lev_wins SA_wins i.idind
+
+

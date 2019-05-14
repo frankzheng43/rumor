@@ -58,6 +58,9 @@ eststo: tobit l1.rumor_dum stds31 stds51 stds101 stds301 stds1001 `CV' if inrang
 import delimited F:\rumor\statadata\std_hs.txt, encoding(UTF-8) varnames(1) stringcols(1) clear
 format trddt %td
 
+eststo clear
+local CV lnasset_wins tobinq_wins lev_wins SA_wins
+
 eststo: reghdfe l1.rumor stds31 `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 eststo: reghdfe l1.rumor stds51 `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
 eststo: reghdfe l1.rumor stds101 `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)

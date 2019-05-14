@@ -1,4 +1,4 @@
-// TODO 使用其他的policy uncertainty度量
+// TODO 使用其他的policy uncertainty度量 ✔
 // Gulen, Huseyin, and Mihai Ion, 2016, Policy Uncertainty and Corporate Investment,
 // The Review of Financial Studies 29, 523–564.
 

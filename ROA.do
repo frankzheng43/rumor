@@ -22,6 +22,7 @@ keep stkcd accper year indcd f050201b
 keep if month(accper) == 12
 egen id = group(stkcd)
 rename f050201b ROA
+* 计算ROA的波动率
 rangestat (sd) ROA, interval(year -3 -1) by(id)
 order id accper year, after(stkcd)
 order ROA_sd, after(ROA)

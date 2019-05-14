@@ -136,7 +136,15 @@ The Review of Financial Studies, 2016, 29(3): 523–564.
 季度回归，1-4期滞后
  */
 //TODO 采用Gulen and lon（2016）年的权重方法，根据在每季度中各月的前后顺序，
-//对越靠后的月份赋值越高（1/6，1/3，1/2），作为稳健性检验。
+//对越靠后的月份赋值越高（1/6，1/3，1/2），作为稳健性检验。 ✔
+
+clear all
+set more off
+eststo clear
+capture version 14
+local location F:/rumor
+cd "`location'"
+
 use "statadata/formerge_q.dta", clear
 merge m:1 year quarter using "statadata/02_macro_q_w.dta", gen(_mmacro)
 keep if _mmacro == 3
@@ -175,7 +183,7 @@ eststo: reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015)
 eststo: reghdfe l2.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
 eststo: reghdfe l1.rumor policy_uncertainty_w_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
 eststo: reghdfe l2.rumor policy_uncertainty_w_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id)
-esttab using results/macro_季度加权滞后.rtf, replace starlevels(* 0.10 ** 0.05 *** 0.01)
+esttab using results/macro_季度加权滞后1.rtf, replace starlevels(* 0.10 ** 0.05 *** 0.01)
 *正式
 eststo clear
 eststo: reghdfe l1.rumor lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
@@ -266,6 +274,7 @@ replace group_abs_DA_Winsor = . if missing(abs_DA_Winsor)
 replace group_abs_DA_Winsor_mean = . if missing(abs_DA_Winsor)
 
 sort id idquarter
+
 reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_abs_DA_Winsor == 0, absorb(idind year) cluster(id) 
 reghdfe l1.rumor policy_uncertainty_wins `CV' if inrange(year,2007,2015) &  group_abs_DA_Winsor == 1, absorb(idind year) cluster(id) 
 
@@ -448,7 +457,7 @@ eststo: reghdfe l1.Tpostnum_wins lgpolicy_uncertainty_wins `CV' if inrange(year,
 eststo: reghdfe l1.Readnum_wins lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
 * eststo: reghdfe Tpostnum lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
 * eststo: reghdfe Readnum lgpolicy_uncertainty_wins `CV' if inrange(year,2007,2015), absorb(idind year) cluster(id) 
-esttab using results/股吧帖子.rtf, replace starlevels(* 0.10 ** 0.05 *** 0.01)
+esttab using results/股吧帖子1.rtf, replace starlevels(* 0.10 ** 0.05 *** 0.01)
 
 
 
