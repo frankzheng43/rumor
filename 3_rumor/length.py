@@ -5,7 +5,8 @@ import jieba
 
 
 import os
-BASE = os.path.dirname(os.path.abspath(__file__))
+# 脚本现位于 code/3_rumor/，词库在上一层的 code/测试词库/
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 rumor_file = r"F:\rumor\collect\20181121rumor_check.xlsx"
 uncertainty_dict = os.path.join(BASE, "测试词库", "不确定性词.txt")
