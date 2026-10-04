@@ -3,11 +3,27 @@ library(stringr)
 library(rio)
 library(readtext)
 dest <- "F:/rumor/fullpdf/"
+
+# 优先从 PATH 找；找不到再按安装位置通配（带版本号目录，升级后仍匹配）
+find_bin <- function(name, fallback) {
+  p <- Sys.which(name)
+  if (nzchar(p)) return(p)
+  hit <- Sys.glob(fallback)
+  if (length(hit) > 0) return(hit[1])
+  stop("找不到 ", name, "，请先安装或把它加进 PATH")
+}
+qpdf <- find_bin("qpdf", "C:/Program Files/qpdf*/bin/qpdf.exe")
+pdftotext <- find_bin(
+  "pdftotext",
+  paste0(Sys.getenv("LOCALAPPDATA"),
+         "/Microsoft/WinGet/Packages/*Poppler*/poppler-*/Library/bin/pdftotext.exe")
+)
+cat("qpdf:", qpdf, "\npdftotext:", pdftotext, "\n")
 myfiles_s <- list.files(path = paste0(dest, "pdf/"), pattern = "pdf|PDF")
 lapply(
   myfiles_s,
   function(i) system(paste(
-      "c:/qpdf/bin/qpdf.exe",
+      paste0('"', qpdf, '"'),
       "--decrypt",
       paste0('"', dest, "pdf/", i, '"'),
       paste0('"', dest, "dec/", i, '"')
@@ -33,7 +49,7 @@ myfiles_dec_new <- list.files(path = paste0(dest, "dec/"), pattern = "pdf|PDF", 
 lapply(
   myfiles_dec_new,
   function(i) system(paste(
-      "C:/xpdf/bin64/pdftotext.exe",
+      paste0('"', pdftotext, '"'),
       "-enc  UTF-8",
       paste0('"', i, '"')
     ),
@@ -47,6 +63,6 @@ b$date <- substr(b$doc_id, 1, 8)
 b$stkcd <- substr(b$doc_id, 10, 15)
 b$stkcd <- paste0("'", b$stkcd)
 b$text <- str_replace_all(b$text, "[\n\f\\s]", "")
-b$text <- str_replace_all(b$text, ",", "�<U+008C>")
+b$text <- str_replace_all(b$text, ",", "�<U+008C>")
 b$summary_size <- str_length(b$text)
 export(x = b, file = "lookatme.csv", fwrite = FALSE, row.names = FALSE, quote = TRUE)

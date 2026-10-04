@@ -4,7 +4,11 @@ import matplotlib.pyplot as plt
 import jieba
 
 
+import os
+BASE = os.path.dirname(os.path.abspath(__file__))
+
 rumor_file = r"F:\rumor\collect\20181121rumor_check.xlsx"
+uncertainty_dict = os.path.join(BASE, "测试词库", "不确定性词.txt")
 xls_reader = pd.ExcelFile(rumor_file)
 df_rumor = pd.read_excel(xls_reader, converters={'stkcd':str}).fillna(value={"article_rumor": ""})
 
@@ -31,7 +35,7 @@ df_rumor["length"] = df_rumor["article_rumor"].apply(len)
 
 
 # 用结巴分词将文本分词
-jieba.load_userdict(r"F:\Pyproject\learnpy\测试词库\不确定性词.txt")
+jieba.load_userdict(uncertainty_dict)
 
 def tokenize_to_word(sentence):
         """
@@ -45,7 +49,7 @@ df_rumor["jieba"] = df_rumor["article_rumor"].apply(tokenize_to_word)
 
 
 # 获取不确定程度
-with open(r"F:\Pyproject\learnpy\测试词库\不确定性词.txt", "r", encoding="utf8") as f:
+with open(uncertainty_dict, "r", encoding="utf8") as f:
         uncerlist = [i.strip() for i in f.readlines()]
 
 def uncercount(string):
