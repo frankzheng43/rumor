@@ -1,21 +1,3 @@
-# 风声鹤唳：不确定性与市场传闻 — 代码说明
-
-经济学硕士论文（厦门大学，2019）。研究中国 A 股上市公司**传闻**与**不确定性**的关系，
-制度背景是交易所的**强制性澄清公告制度**——传闻发生后公司须在两日内公告澄清，
-因此"传闻 + 澄清公告"天然成对，构成一个可观测的谣言数据集。
-
-样本：2007–2015，约 8 万条传闻 / 80,714 观测。
-
-## 研究假设
-
-| 编号 | 内容 | 对应脚本 |
-|---|---|---|
-| H1a | 宏观不确定性上升 → 传闻发生 | `reg_macro.do` |
-| H1b | 公司不确定性上升 → 传闻发生 | `reg_ROA.do` |
-| H1c | 行业不确定性上升 → 传闻发生 | `reg_industry.do` |
-| H2 | 传闻产生 → 股价正向冲击 | `event_study.do` |
-| 可信度 | 按是否被官方否认评分，做交叉检验 | `trustworthiness.do` + `reg_score.do` |
-
 ## 目录结构
 
 ```
@@ -39,18 +21,6 @@ code/
 
 ## 1_raw — 清洗原始表 → `statadata/02_firm_*.dta`
 
-这批脚本共用一个高度重复的开头模板，看懂一个就懂全部：
-
-```stata
-import delimited raw/XXX.txt, encoding(UTF-8) varnames(1) clear
-drop in 1/2                                    // 跳过字段说明行
-drop if typrep == "B"                          // 丢弃 B 栏（重复披露/修订版），只留首次
-drop if inlist(substr(stkcd,1,1),"2","3","9")  // 只要 A 股：代码首位为 0 或 6
-gen x1 = date(x, "YMD") / drop x               // 字符串转 Stata 日期
-keep if month(accper) == 12                     // 只取年报
-destring ..., gen(...)                         // 财务数字为文本，转数值
-save statadata/02_firm_XXX.dta, replace
-```
 
 | 脚本 | 数据源 | 产出 |
 |---|---|---|
@@ -62,14 +32,11 @@ save statadata/02_firm_XXX.dta, replace
 | `tobinq.do` | `FI_T10` TobinQ 原始值 | `02_firm_TB` |
 | `RD.do` | 研发支出 `PT_LCRDSpending` | `02_firm_RD` |
 | `trade.do` | 日交易行情 `TRD_Dalyr`（主板，2001–2017） | `02_trddta` |
+| `trade.sas` | SAS 版：日收益率 3/5/10/30/100 日滚动标准差（个股 + HS300） | `std.txt` / `std_hs.txt`（供 `reg_time.do` 日频回归） |
 | `firm_info.do` | 公司基本信息 `TRD_Co` | `02_firm_info` |
 | `hs300.do` | 沪深300 日收益 | `hs300`（事件研究的市场调整基准） |
 | `Location_Change.do` | 公司地址变更 | `02_firm_loc` |
 | `Policy_Uncertainty.do` | 经济政策不确定性 EPU（Baker-Bloom-Davis 中国指数） | `02_macro` / `02_macro_q` |
-
-`Policy_Uncertainty.do` 把月度 EPU 聚成季度时**不是简单平均**，而是造 `weight = seq/6`
-按 1/3、1/3、1/3 分配给季内三个月做加权平均，对应稳健性检验
-`results/macro_季度加权滞后*.rtf`。
 
 ## 2_uncertainty — 三个不确定性指标（核心自变量）
 
@@ -92,8 +59,6 @@ save statadata/02_firm_XXX.dta, replace
 | `guba.do` | 股吧帖子读帖/跟帖数与 EPU 的相关性（渠道检验） |
 | `collect_append.do` | 合并各人收集的传闻 xlsx（**前置手工步骤**，非自动流程） |
 
-`rumor.do` 中 `drop U - X`、`drop S T`、`drop T - IN` 这类手写列范围，是逐年 sheet
-列对不齐导致的硬编码清洗——**很脆，更换数据源即失效**。
 
 ## 4_controls — 控制变量与面板底座
 
@@ -124,31 +89,3 @@ save statadata/02_firm_XXX.dta, replace
 | `describe.do` | 描述性统计与相关系数 |
 | `graph.do` | 出图 + 传闻来源占比 |
 | `allregs.do` | 汇总脚本：按 DA / 两权分离度 / 分析师跟踪做横截面异质性检验。**未跑通全流程前先别启用** |
-
-回归输出一律用 `esttab ... results/xxx.rtf` 落地，`results/` 下的 `.rtf` 即论文表格来源。
-
----
-
-## 注意事项
-
-1. **`MAIN.do` 已修复**。原版本引用了 6 个根本不存在的文件
-   （`01_trade.do`、`01_rumor.do`、`05_CV.do`、`02_macrolevel.do`、
-   `03_firmlevel.do`、`04_industrylevel.do`），是个废弃空壳。现已改为引用真实文件。
-
-2. **`MAIN.do` 未收录的 5 个脚本是有意为之**：
-   - `collect_append.do` — 需先人工收集，属前置步骤
-   - `length.do` — 依赖先跑 `length.py`，且需要 pandas/jieba 环境
-   - `governance.do` — 只有 11 行，未写完
-   - `price_std.do` — 6 行残片，功能已被 `sales_std.do` 取代
-   - `not_in_use.do` — 名字即已废弃
-
-3. **已知 bug**：`3_rumor/rep_fulltxt.do` 与 `guba.do` 中 import 路径写作
-   `"F:/rumor/raw/guba/\`i'"`（缺末尾的 `.`），照原样跑会找不到文件。
-
-4. **外部依赖**：
-   - `length.py` 需要 `pandas` `seaborn` `matplotlib` `jieba`
-   - `extractpdf.r` 需要 R 及 `stringr` `rio` `readtext`；qpdf 与 pdftotext
-     通过 `Sys.which()` + glob 兜底查找（两者安装路径均带版本号，硬编码会失效）
-
-5. **仅 `code/` 是 git 仓库**。项目根目录下的 `raw/` `statadata/` `collect/` `论文/`
-   等数据与文稿均不在版本控制内——`.gitignore` 已排除 `xlsx/xls/csv/dta/sas7bdat`。

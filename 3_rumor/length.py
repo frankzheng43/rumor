@@ -9,6 +9,7 @@ import os
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 rumor_file = r"F:\rumor\collect\20181121rumor_check.xlsx"
+out_dir = r"F:\rumor\statadata\length"
 uncertainty_dict = os.path.join(BASE, "测试词库", "不确定性词.txt")
 xls_reader = pd.ExcelFile(rumor_file)
 df_rumor = pd.read_excel(xls_reader, converters={'stkcd':str}).fillna(value={"article_rumor": ""})
@@ -69,7 +70,8 @@ df_rumor["stkcd"] = "'"+df_rumor["stkcd"]
 
 
 # 保存导出
-df_rumor.to_csv("file_name2.csv", encoding="utf-16", sep='\t')
+os.makedirs(out_dir, exist_ok=True)
+df_rumor.to_csv(os.path.join(out_dir, "file_name2.csv"), encoding="utf-16", sep='\t')
 
 # 一些作图
 sns.distplot(df_rumor["length"])

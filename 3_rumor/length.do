@@ -1,5 +1,5 @@
 clear
-import excel "F:\rumor\code\12length.xlsx", sheet("file_name2") firstrow allstring
+import excel "F:\rumor\statadata\length\12length.xlsx", sheet("file_name2") firstrow allstring
 
 replace stkcd = substr(stkcd,2,7)
 
